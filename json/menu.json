@@ -1,0 +1,48 @@
+{
+    "options": [
+        {
+            "id":1001,
+            "text":"Home",
+            "icon":"home",
+            "color":"#197602",
+            "component":"components/home"
+        },
+
+         {
+            "id":1002,
+            "text":"Drivers",
+            "icon":"steering-wheel",
+            "color":"#9C2780",
+            "component":"components/drivers"
+        },
+
+         {
+            "id":1003,
+            "text":"Map",
+            "icon":"map-location-dot",
+            "color":"#F44336",
+            "component":"components/map"
+        },
+
+         {
+            "id":1004,
+            "text":"Tucks",
+            "icon":"truck",
+            "color":"#FFC107",
+            "component":"components/trucks"
+        },
+
+        {
+            "id":1004,
+            "text":"Routes",
+            "icon":"route",
+            "color":"#8BC34A",
+            "component":"components/routes"
+        }
+
+    ]
+
+
+
+
+}

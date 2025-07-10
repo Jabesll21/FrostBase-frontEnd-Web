@@ -1,0 +1,38 @@
+:root {
+    --background:#E0ECFD;
+    --headerBackground: #FFFFFF;
+    --titleText: #222;
+    --lightText: #5F6165;
+    --fieldBackground: #000;
+    --inningBackground: #000;
+    --fieldElementBackground: #E0ECFD;
+    --fieldElementBorder: #FFFFFF;
+    --fieldElementBorderDark: #e5eef7;
+    --on: #FFB300;
+    --off: #263238;
+
+    /* --background:#263238;
+    --headerBackground: #37474F;
+    --titleText: #ECEFF1;
+    --fieldBackground: #000;
+    --inningBackground: #000;
+    --teamName: #FFF;
+    --gameScore: #FFF;
+    --fieldElementBackground: #263238;
+    --fieldElementBorder: #37474F;
+    --fieldElementBorderDark: #293a42;
+    --on: #FFB300;
+    --off: #263238; */
+
+    /*status*/
+    --good: #4CAF50;
+    --goodDark: #369439;
+    --low: #CDDC39;
+    --lowDark: #a8b52e;
+    --mid: #FFEB3B;
+    --midDark: #ccbc2a;
+    --high: #FF9800;
+    --highDark: #cb7b02;
+    --extreme: #F44336;
+    --extremeDark: #d03328;
+}

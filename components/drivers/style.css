@@ -1,0 +1,11 @@
+.content{
+    display: flex;
+    justify-content: center;
+}
+.table{
+    width: 90%;
+    height: 500px;
+    background: var(--fieldElementBorder);
+    border-radius: 16px;
+    border: 4px solid var(--fieldElementBorderDark);
+}

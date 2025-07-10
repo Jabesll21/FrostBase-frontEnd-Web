@@ -1,0 +1,44 @@
+.options{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    overflow: auto;
+    height: 800px;
+}
+.opt {
+    background: #FFF;
+    width: 90%;
+    height: 400px;
+    border-radius: 16px;
+    margin-bottom: 15px;
+}
+.opt label{
+    margin: 15px;
+    font-size: 24px;
+    font-weight: bold;
+}
+.image {
+    display: flex;
+    justify-content: center;
+}
+.image img {
+    height: 300px;
+    
+}
+
+@media only screen and (max-width: 1024px) {
+    .kpi{
+        width: calc(33.3% - 20px);
+    }    
+}
+@media only screen and (max-width: 768px) {
+    .kpi{
+        width: calc(50% - 20px);
+    }    
+}
+@media only screen and (max-width: 480px) {
+    .kpi{
+        width: calc(100% - 20px);
+    }    
+}

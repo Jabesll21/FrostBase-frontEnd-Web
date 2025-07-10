@@ -1,7 +1,5 @@
 export var config = {
-    api:{
-
-        url:"http://localhost:5093/api/",
-    },
-
+    api: {
+        url: 'http://localhost:5125/api/'
+    }
 }

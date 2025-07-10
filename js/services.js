@@ -1,1 +1,0 @@
-import { config } from '../js/config.js';

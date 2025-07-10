@@ -1,0 +1,25 @@
+* {
+    font-family: Arial, Helvetica, sans-serif;
+}
+body {
+    margin: 0px;
+    background: var(--background);
+}
+h1 {
+    font-size: 32pt;
+    color: var(--titleText);
+    margin: 10px;
+    width: 100%;
+    text-align: center;
+}
+#content {
+    position: relative;
+    float: left;
+    width: 100%;
+}
+.content{
+    display: flex;
+    justify-content: center;
+}
+
+

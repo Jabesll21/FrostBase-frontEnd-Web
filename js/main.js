@@ -12,6 +12,7 @@ function init() {
         toggleSideMenu();
     })
     showSideMenu(); //show side menu
+    loadComponent('components\\dashboard'); //show component at start
 }
 
 //toggle side menu
@@ -27,4 +28,29 @@ export function toggleSideMenu(){
         document.getElementById('side-menu').style.display = 'none';
         document.getElementById('content').style.width = '100%'
     }
+}
+
+//load component
+export function loadComponent(component){
+    console.log(component);
+    var url = component + '/index.html';
+    var urlCode = '../' + component + '/code.js'
+    fetch(url)
+        .then((response) => { return response.text(); })
+        .then( (html) => { loadHtml(html) } )
+        .then( () => { importModule(urlCode) })
+        .catch( (error) => {console.error('Invalid HTML file'); })
+}
+
+//loading html
+async function loadHtml(html) {
+    console.log('Loading HTML...')
+    document.getElementById('content').innerHTML = html
+}
+
+//import module
+async function importModule(moduleUrl) {
+    console.log('Importing Module ' + moduleUrl)
+    let { init } = await import(moduleUrl)
+    init()
 }

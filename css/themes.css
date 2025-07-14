@@ -1,7 +1,8 @@
 :root {
     --background:#E0ECFD;
     --headerBackground: #FFFFFF;
-    --titleText: #222;
+    --titleText: #000080;
+    --fieldText: #000080;
     --lightText: #5F6165;
     --fieldBackground: #000;
     --inningBackground: #000;
@@ -25,14 +26,14 @@
     --off: #263238; */
 
     /*status*/
-    --good: #4CAF50;
-    --goodDark: #369439;
-    --low: #CDDC39;
-    --lowDark: #a8b52e;
-    --mid: #FFEB3B;
-    --midDark: #ccbc2a;
-    --high: #FF9800;
-    --highDark: #cb7b02;
-    --extreme: #F44336;
-    --extremeDark: #d03328;
+    --good: #A5D6A7;
+    --goodDark: #81C784;
+    --low: #E6EE9C;
+    --lowDark: #DCE775;
+    --mid: #FFE082;
+    --midDark: #FFD54F;
+    --high: #FFAB91;
+    --highDark: #FF8A65;
+    --extreme: #EF9A9A;
+    --extremeDark: #E57373;
 }

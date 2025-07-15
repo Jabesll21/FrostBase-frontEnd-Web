@@ -1,40 +1,25 @@
 <link href="components/drivers/style.css" rel="stylesheet">
 <div class="h1"><h1>Drivers</h1></div>
+<div id="button" class="button">
+    <button id="add-button" class="add-button">
+        + Add new
+    </button>
+</div>
 <div class="content">
-    <div class="table">
-        <table class style="width:100%">
-            <tr>
-                <th>No.</th>
-                <th>Name</th>
-                <th>E-mail</th>
-                <th>Route</th>
-                <th>Truck</th>
-                <th>Licence plate</th>
-            </tr>
-            <tr>
-                <td>1</td>
-                <td>Andres Cuevas</td>
-                <td>cuevas@frost.com</td>
-                <td>Otay</td>
-                <td>Mercedes</td>
-                <td>ABC-123-D</td>
-            </tr>
-            <tr>
-                <td>2</td>
-                <td>Jabes Llamas</td>
-                <td>llamas@frost.com</td>
-                <td>El Refugio</td>
-                <td>Mercedes</td>
-                <td>EFG-456-H</td>
-            </tr>
-            <tr>
-                <td>3</td>
-                <td>Neyzer Toledo</td>
-                <td>toledo@frost.com</td>
-                <td>Zona Río</td>
-                <td>Volvo</td>
-                <td>IJK-789-L</td>
-            </tr>
+    <div class="table-container">
+        <table id="driversTable" class="drivers-table">
+            <thead>
+                <tr>
+                    <th>No.</th>
+                    <th>Name</th>
+                    <th>E-mail</th>
+                    <th>Route</th>
+                    <th>Truck</th>
+                    <th>Licence plate</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody">
+            </tbody>
         </table>
     </div>
 </div>

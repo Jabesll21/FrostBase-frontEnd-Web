@@ -131,10 +131,6 @@ export function init() {
     updateStats();
     renderTrucks(filteredTrucks);
     setupEventListeners();
-
-    document.getElementById('add-button').addEventListener('click', () => {
-        loadComponent('trucks/register');
-    });
 }
 
 function updateStats() {
@@ -209,7 +205,6 @@ function setupEventListeners() {
         });
     });
 
-    
     document.getElementById('add-button').addEventListener('click', () => {
     loadComponent('components/trucks/register'); 
 });
@@ -236,4 +231,32 @@ window.deleteTruck = function(id) {
     if (confirm('Are you sure you want to delete this truck?')) {
         alert(`Delete truck ID: ${id}`);
     }
+}
+
+
+
+
+//load component
+export function loadComponent(component){
+    console.log(component);
+    var url = component + '/index.html';
+    var urlCode = '../../' + component + '/code.js'
+    fetch(url)
+        .then((response) => { return response.text(); })
+        .then( (html) => { loadHtml(html) } )
+        .then( () => { importModule(urlCode) })
+        .catch( (error) => {console.error('Invalid HTML file'); })
+}
+
+//loading html
+async function loadHtml(html) {
+    console.log('Loading HTML...')
+    document.getElementById('content').innerHTML = html
+}
+
+//import module
+async function importModule(moduleUrl) {
+    console.log('Importing Module ' + moduleUrl)
+    let { init } = await import(moduleUrl)
+    init()
 }

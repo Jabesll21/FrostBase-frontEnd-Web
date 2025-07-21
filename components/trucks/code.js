@@ -209,9 +209,10 @@ function setupEventListeners() {
         });
     });
 
+    
     document.getElementById('add-button').addEventListener('click', () => {
-        loadComponent('trucks/register/index.html');
-    });
+    loadComponent('components/trucks/register'); 
+});
     
 }
 

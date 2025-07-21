@@ -1,0 +1,318 @@
+/* General container */
+.register-truck-container {
+    padding: 20px 40px;
+    max-width: 1400px;
+    margin: 0 auto;
+    background: #E0ECFD;
+    height: calc(100vh - 80px);
+    overflow-y: auto;
+}
+
+/* Header */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 40px;
+}
+
+.title {
+    font-size: 3rem;
+    font-weight: 700;
+    color: #000080;
+    margin: 0;
+}
+
+.back-button {
+    background: #000080;
+    color: white;
+    border: none;
+    border-radius: 25px;
+    padding: 12px 24px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0, 0, 128, 0.2);
+}
+
+.back-button:hover {
+    background: #000066;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 128, 0.3);
+}
+
+/* Form Container */
+.form-container {
+    background: white;
+    border-radius: 20px;
+    padding: 40px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+/* Form Styles */
+.truck-form {
+    background: transparent;
+    border-radius: 0;
+    padding: 0;
+    box-shadow: none;
+    margin-bottom: 0;
+}
+
+.form-section {
+    margin-bottom: 40px;
+}
+
+.form-section:last-of-type {
+    margin-bottom: 30px;
+}
+
+.section-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #000080;
+    margin-bottom: 25px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #E0ECFD;
+}
+
+.form-row {
+    display: flex;
+    gap: 25px;
+    margin-bottom: 25px;
+}
+
+.form-group {
+    flex: 1;
+}
+
+.form-group.full-width {
+    flex: 1 1 100%;
+}
+
+.form-label {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 10px;
+}
+
+.form-input,
+.form-textarea {
+    width: 100%;
+    padding: 15px 18px;
+    border: 2px solid #d1d5db;
+    border-radius: 12px;
+    font-size: 15px;
+    background: white;
+    transition: all 0.3s ease;
+    box-sizing: border-box;
+}
+
+.form-input:focus,
+.form-textarea:focus {
+    outline: none;
+    border-color: #000080;
+    box-shadow: 0 0 0 3px rgba(0, 0, 128, 0.1);
+}
+
+.form-input::placeholder,
+.form-textarea::placeholder {
+    color: #9ca3af;
+}
+
+.form-textarea {
+    resize: vertical;
+    min-height: 100px;
+    font-family: inherit;
+}
+
+/* Action Buttons */
+.form-actions {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    padding-top: 30px;
+    border-top: 1px solid #e5e7eb;
+}
+
+.btn-cancel,
+.btn-save {
+    padding: 15px 30px;
+    border-radius: 25px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: none;
+    min-width: 140px;
+}
+
+.btn-cancel {
+    background: #f9fafb;
+    color: #374151;
+    border: 2px solid #d1d5db;
+}
+
+.btn-cancel:hover {
+    background: #f3f4f6;
+    border-color: #9ca3af;
+    transform: translateY(-1px);
+}
+
+.btn-save {
+    background: #000080;
+    color: white;
+    box-shadow: 0 4px 15px rgba(0, 0, 128, 0.2);
+}
+
+.btn-save:hover {
+    background: #000066;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 128, 0.3);
+}
+
+.btn-save:disabled {
+    background: #9ca3af;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.btn-loading {
+    display: none;
+}
+
+.btn-save.loading .btn-text {
+    display: none;
+}
+
+.btn-save.loading .btn-loading {
+    display: inline;
+}
+
+/* Success Message */
+.success-message {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.success-content {
+    background: white;
+    border-radius: 16px;
+    padding: 40px;
+    text-align: center;
+    max-width: 400px;
+    width: 90%;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+}
+
+.success-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: #16a34a;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    font-weight: bold;
+    margin: 0 auto 20px;
+}
+
+.success-content h3 {
+    font-size: 1.5rem;
+    color: #000080;
+    margin-bottom: 10px;
+}
+
+.success-content p {
+    color: #6b7280;
+    margin-bottom: 25px;
+}
+
+.btn-continue {
+    background: #000080;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    padding: 12px 24px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-continue:hover {
+    background: #000066;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .register-truck-container {
+        padding: 20px;
+    }
+
+    .header {
+        flex-direction: column;
+        gap: 20px;
+        text-align: center;
+    }
+
+    .title {
+        font-size: 2.5rem;
+    }
+
+    .form-container {
+        padding: 25px;
+    }
+
+    .form-row {
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .form-actions {
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .btn-cancel,
+    .btn-save {
+        width: 100%;
+    }
+
+    .success-content {
+        padding: 30px 20px;
+    }
+}
+
+@media (max-width: 480px) {
+    .register-truck-container {
+        padding: 15px;
+    }
+
+    .form-container {
+        padding: 20px;
+    }
+
+    .section-title {
+        font-size: 1.3rem;
+    }
+
+    .title {
+        font-size: 2rem;
+    }
+}

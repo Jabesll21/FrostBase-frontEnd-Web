@@ -1,0 +1,75 @@
+<link href="components/trucks/register/style.css" rel="stylesheet">
+
+<div class="register-truck-container">
+    <div class="header">
+        <h1 class="title">Add New Truck</h1>
+        <button class="back-button" id="back-button">
+            ← Back to Trucks
+        </button>
+    </div>
+
+    <div class="form-container">
+        <form id="truck-form" class="truck-form">
+            
+            <div class="form-section">
+                <h2 class="section-title">Basic Information</h2>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="brand" class="form-label">Brand</label>
+                        <select id="brand" name="brand" class="form-input" required>
+                            <option value="">Select Brand</option>
+                            <option value="Volvo">Volvo</option>
+                            <option value="Mercedes">Mercedes</option>
+                            <option value="Scania">Scania</option>
+                            <option value="MAN">MAN</option>
+                            <option value="DAF">DAF</option>
+                            <option value="Iveco">Iveco</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="model" class="form-label">Model</label>
+                        <input type="text" id="model" name="model" class="form-input" 
+                               placeholder="e.g., FH, BE, Sprinter Van" required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="license_plate" class="form-label">License Plate</label>
+                        <input type="text" id="license_plate" name="license_plate" class="form-input" 
+                               placeholder="e.g., ABC-123-D" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="state" class="form-label">Status</label>
+                        <select id="state" name="state" class="form-input" required>
+                            <option value="">Select Status</option>
+                            <option value="true">Active</option>
+                            <option value="false">Inactive</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button type="button" class="btn-cancel" id="cancel-button">Cancel</button>
+                <button type="submit" class="btn-save" id="save-button">
+                    <span class="btn-text">Save Truck</span>
+                    <span class="btn-loading" style="display: none;">Saving...</span>
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <div class="success-message" id="success-message" style="display: none;">
+        <div class="success-content">
+            <div class="success-icon">✓</div>
+            <h3>Truck Added Successfully!</h3>
+            <p>The truck has been registered and added to your fleet.</p>
+            <button class="btn-continue" id="continue-button">Continue</button>
+        </div>
+    </div>
+</div>
+

@@ -128,6 +128,7 @@ function showAlert(message) {
 
 
 ////////////////////////////////////////////////////////////
+//Al usar este método, indicar que la photo es el nombre de la marca en minúsculas y con terminación .png
 async function saveTruck(truckData) {
     try {
         const response = await fetch('/api/trucks', {

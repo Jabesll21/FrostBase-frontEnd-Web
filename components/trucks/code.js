@@ -5,7 +5,7 @@ const trucks = [
         model: "FH",
         status: "In use",
         licensePlate: "ABC-123-D",
-        photo: ""
+        photo: "volvo.png"
     },
     {
         id: 2,
@@ -13,7 +13,7 @@ const trucks = [
         model: "BE",
         status: "In use",
         licensePlate: "EFG-456-H",
-        photo: ""
+        photo: "volvo.png"
     },
     {
         id: 3,
@@ -21,7 +21,7 @@ const trucks = [
         model: "Sprinter Van",
         status: "Available",
         licensePlate: "IJK-789-L",
-        photo: ""
+        photo: "mercedes.png"
     },
     {
         id: 4,
@@ -29,7 +29,7 @@ const trucks = [
         model: "BE",
         status: "In use",
         licensePlate: "MNO-123-P",
-        photo: ""
+        photo: "volvo.png"
     },
     {
         id: 5,
@@ -37,7 +37,7 @@ const trucks = [
         model: "BE",
         status: "In use",
         licensePlate: "QRS-456-T",
-        photo: ""
+        photo: "volvo.png"
     },
     {
         id: 6,
@@ -45,7 +45,7 @@ const trucks = [
         model: "BE",
         status: "Available",
         licensePlate: "UVW-789-X",
-        photo: ""
+        photo: "volvo.png"
     },
      {
         id: 1,
@@ -53,7 +53,7 @@ const trucks = [
         model: "FH",
         status: "In use",
         licensePlate: "ABC-123-D",
-        photo: ""
+        photo: "volvo.png"
     },
     {
         id: 2,
@@ -61,7 +61,7 @@ const trucks = [
         model: "BE",
         status: "In use",
         licensePlate: "EFG-456-H",
-        photo: ""
+        photo: "volvo.png"
     },
     {
         id: 3,
@@ -69,7 +69,7 @@ const trucks = [
         model: "Sprinter Van",
         status: "Available",
         licensePlate: "IJK-789-L",
-        photo: ""
+        photo: "mercedes.png"
     },
      {
         id: 1,
@@ -77,7 +77,7 @@ const trucks = [
         model: "FH",
         status: "In use",
         licensePlate: "ABC-123-D",
-        photo: ""
+        photo: "volvo.png"
     },
     {
         id: 2,
@@ -85,7 +85,7 @@ const trucks = [
         model: "BE",
         status: "In use",
         licensePlate: "EFG-456-H",
-        photo: ""
+        photo: "volvo.png"
     },
     {
         id: 3,
@@ -93,7 +93,7 @@ const trucks = [
         model: "Sprinter Van",
         status: "Available",
         licensePlate: "IJK-789-L",
-        photo: ""
+        photo: "mercedes.png"
     },
      {
         id: 1,
@@ -101,7 +101,7 @@ const trucks = [
         model: "FH",
         status: "In use",
         licensePlate: "ABC-123-D",
-        photo: ""
+        photo: "volvo.png"
     },
     {
         id: 2,
@@ -109,7 +109,7 @@ const trucks = [
         model: "BE",
         status: "In use",
         licensePlate: "EFG-456-H",
-        photo: ""
+        photo: "volvo.png"
     },
     {
         id: 3,
@@ -117,7 +117,7 @@ const trucks = [
         model: "Sprinter Van",
         status: "Available",
         licensePlate: "IJK-789-L",
-        photo:  ""
+        photo:  "mercedes.png"
     },
 ];
 
@@ -168,7 +168,7 @@ function renderTrucks(trucksArray) {
                 <div class="truck-model">${truck.brand} ${truck.model}</div>
             </div>
             <div class="truck-image">
-                <img src="${truck.photo}" alt="${truck.brand} ${truck.model}">
+                <img src="components/trucks/photos/${truck.photo}" alt="${truck.brand} ${truck.model}">
             </div>
             <div class="truck-status">
                 <span class="status-badge ${statusClass}">${truck.status}</span>

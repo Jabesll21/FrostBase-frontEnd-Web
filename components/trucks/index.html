@@ -1,9 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+
 <link href="components/trucks/style.css" rel="stylesheet">
-<div class="h1"><h1>Trucks</h1></div>
-<div id="button" class="button">
-    <button id="add-button" class="add-button">
-        + Add new
-    </button>
+
+<div class="trucks-container">
+    <div class="header">
+        <h1 class="title">Trucks</h1>
+        <a href="components/trucks/register/index.html" class="add-button" id="add-button">+ Add new</a>
+    </div>
+
+    <div class="stats-summary">
+        <div class="stat-item">
+            <span class="stat-number" id="total-trucks">6</span>
+            <span class="stat-label">Total Trucks</span>
+        </div>
+        <div class="stat-item">
+            <span class="stat-number" id="in-use-trucks">4</span>
+            <span class="stat-label">In Use</span>
+        </div>
+        <div class="stat-item">
+            <span class="stat-number" id="available-trucks">2</span>
+            <span class="stat-label">Available</span>
+        </div>
+    </div>
+
+    <div class="controls">
+        <div class="search-container">
+            <span class="search-icon"></span>
+            <input type="text" class="search-input" placeholder="Search trucks..." id="search-input">
+        </div>
+        
+        <div class="filter-buttons">
+            <button class="filter-btn active" data-filter="all">All</button>
+            <button class="filter-btn" data-filter="available">Available</button>
+            <button class="filter-btn" data-filter="in-use">In Use</button>
+        </div>
+    </div>
+
+    <div class="trucks-grid-container">
+        <div id="trucks-grid" class="trucks-grid"></div>
+        
+        <div class="empty-state" id="empty-state">
+           
+        </div>
+    </div>
 </div>
-<div id="truck-list" class="truck-list">
-</div>
+</body>
+</html>

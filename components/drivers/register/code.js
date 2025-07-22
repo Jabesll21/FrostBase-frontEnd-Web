@@ -2,7 +2,6 @@ export function init(params = {}) {
     console.log('Initializing add driver interface...');
     setupEventListeners();
     
-    // Si se pasa un driverId, cargar los datos para editar
     if (params.driverId) {
         loadDriverData(params.driverId);
         document.querySelector('.title').textContent = 'Edit Driver';
@@ -39,7 +38,6 @@ function setupEventListeners() {
         let value = e.target.value.toUpperCase();
         value = value.replace(/[^A-Z0-9-]/g, '');
         
-        // Formatear como ABC-123-D
         if (value.length <= 3) {
             e.target.value = value;
         } else if (value.length <= 6) {
@@ -82,9 +80,7 @@ function setMinimumDates() {
 }
 
 function loadDriverData(driverId) {
-    // En una aplicación real, esto haría una petición a la API
     console.log('Loading driver data for ID:', driverId);
-    // Aquí cargarías los datos del conductor y llenarías el formulario
 }
 
 function validateEmail() {
@@ -102,13 +98,11 @@ function validateEmail() {
 }
 
 function validateLicensePlate(value) {
-    // Validate format: ABC-123-D
     const pattern = /^[A-Z0-9]{3}-[0-9]{3}-[A-Z]$/;
     return pattern.test(value);
 }
 
 function validateDriverLicense(value) {
-    // Validate driver's license format
     const pattern = /^[A-Z]{2}[0-9]{9}$/;
     return pattern.test(value.replace(/\s/g, ''));
 }
@@ -118,7 +112,6 @@ function validateForm() {
     const formData = new FormData(form);
     let isValid = true;
     
-    // Required fields validation
     const requiredFields = [
         'firstName', 'lastName', 'email', 'phone', 'licenseNumber', 
         'licenseExpiry', 'route', 'truck', 'licensePlate', 'status', 
@@ -135,12 +128,10 @@ function validateForm() {
         }
     });
 
-    // Email validation
     if (!validateEmail()) {
         isValid = false;
     }
 
-    // License plate validation
     const licensePlate = formData.get('licensePlate');
     if (licensePlate && !validateLicensePlate(licensePlate)) {
         const input = document.getElementById('licensePlate');
@@ -148,7 +139,6 @@ function validateForm() {
         isValid = false;
     }
 
-    // Driver's license validation
     const licenseNumber = formData.get('licenseNumber');
     if (licenseNumber && !validateDriverLicense(licenseNumber)) {
         const input = document.getElementById('licenseNumber');
@@ -156,7 +146,6 @@ function validateForm() {
         isValid = false;
     }
 
-    // Experience validation
     const experience = parseInt(formData.get('experience'));
     if (experience < 0 || experience > 50) {
         const input = document.getElementById('experience');
@@ -164,7 +153,6 @@ function validateForm() {
         isValid = false;
     }
 
-    // License expiry validation
     const licenseExpiry = new Date(formData.get('licenseExpiry'));
     const today = new Date();
     if (licenseExpiry <= today) {
@@ -201,7 +189,6 @@ function hideFieldError(input) {
 function clearForm() {
     document.getElementById('driver-form').reset();
     
-    // Clear all error states
     document.querySelectorAll('.form-input, .form-textarea').forEach(input => {
         hideFieldError(input);
     });
@@ -219,7 +206,6 @@ function handleFormSubmit(e) {
     saveButton.classList.add('loading');
     saveButton.disabled = true;
 
-    // Simulate API call
     setTimeout(() => {
         const formData = new FormData(e.target);
         const driverData = {
@@ -241,14 +227,12 @@ function handleFormSubmit(e) {
 
         console.log('Driver data to save:', driverData);
         
-        // En una aplicación real, aquí harías la petición a la API
-        // saveDriverToAPI(driverData);
         
         saveButton.classList.remove('loading');
         saveButton.disabled = false;
         showSuccessMessage();
         
-    }, 2000); // Simular delay de red
+    }, 2000); 
 }
 
 function showSuccessMessage() {
@@ -260,11 +244,9 @@ function hideSuccessMessage() {
 }
 
 function showAlert(message) {
-    // En una aplicación real, podrías usar un modal más sofisticado
     alert(message);
 }
 
-// Funciones de navegación (deben estar disponibles globalmente)
 function loadComponent(component, params = {}) {
     console.log('Loading component:', component, params);
     var url = component + '/index.html';

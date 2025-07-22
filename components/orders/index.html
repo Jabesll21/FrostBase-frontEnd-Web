@@ -1,2 +1,59 @@
 <link href="components/orders/style.css" rel="stylesheet">
-<div class="h1"><h1>Orders</h1></div>
+
+<div class="orders-container">
+    <!-- Header -->
+    <div class="header">
+        <div class="h1">
+            <h1>Orders</h1>
+        </div>
+        <div class="button">
+            <button class="filter-button" onclick="filterOrders()">
+                 Filters
+            </button>
+            <button class="add-button" onclick="addNewOrder()">
+                + New Order
+            </button>
+        </div>
+    </div>
+
+    <div class="kanban-board">
+        <!-- Backlog Column -->
+        <div class="kanban-column backlog">
+            <div class="column-header">
+                <h3 class="column-title">Backlog</h3>
+                <span class="column-count" id="backlog-count">0</span>
+            </div>
+            <div class="column-content" id="backlog-orders">
+                <div class="loading">
+                    <div class="spinner"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- In Process Column -->
+        <div class="kanban-column in-process">
+            <div class="column-header">
+                <h3 class="column-title">In Process</h3>
+                <span class="column-count" id="process-count">0</span>
+            </div>
+            <div class="column-content" id="process-orders">
+                <div class="loading">
+                    <div class="spinner"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Completed Column -->
+        <div class="kanban-column completed">
+            <div class="column-header">
+                <h3 class="column-title">Completed</h3>
+                <span class="column-count" id="completed-count">0</span>
+            </div>
+            <div class="column-content" id="completed-orders">
+                <div class="loading">
+                    <div class="spinner"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

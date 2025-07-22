@@ -1,0 +1,336 @@
+
+/* Orders Container */
+.orders-container {
+    padding: 20px 40px;
+    max-width: 1400px;
+    margin: 0 auto;
+    background: #E0ECFD;
+    min-height: calc(100vh - 80px);
+}
+
+/* Header */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 40px;
+}
+
+.h1 h1 {
+    font-size: 3rem;
+    font-weight: 700;
+    color: #000080;
+    margin: 0;
+}
+
+.button {
+    display: flex;
+    gap: 15px;
+}
+
+.add-button {
+    background: #000080;
+    color: white;
+    border: none;
+    border-radius: 25px;
+    padding: 12px 24px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0, 0, 128, 0.2);
+}
+
+.add-button:hover {
+    background: #000066;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 128, 0.3);
+}
+
+.filter-button {
+    background: #ffffff;
+    color: #000080;
+    border: 2px solid #000080;
+    border-radius: 25px;
+    padding: 10px 20px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.filter-button:hover {
+    background: #000080;
+    color: white;
+}
+
+/* Kanban Board */
+.kanban-board {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 30px;
+    margin-top: 20px;
+}
+
+.kanban-column {
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+    padding: 25px;
+    min-height: 600px;
+}
+
+.column-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #F3F4F6;
+}
+
+.column-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #374151;
+    margin: 0;
+}
+
+.column-count {
+    background: #E5E7EB;
+    color: #6B7280;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+/* Column specific styles */
+.backlog .column-title {
+    color: #DC2626;
+}
+
+.backlog .column-count {
+    background: #FEE2E2;
+    color: #DC2626;
+}
+
+.in-process .column-title {
+    color: #D97706;
+}
+
+.in-process .column-count {
+    background: #FEF3C7;
+    color: #D97706;
+}
+
+.completed .column-title {
+    color: #059669;
+}
+
+.completed .column-count {
+    background: #D1FAE5;
+    color: #059669;
+}
+
+/* Order Cards */
+.order-card {
+    background: #FAFAFA;
+    border: 1px solid #E5E7EB;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 15px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.order-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    border-color: #000080;
+}
+
+.order-id {
+    font-size: 14px;
+    font-weight: 700;
+    color: #000080;
+    margin-bottom: 8px;
+}
+
+.order-store {
+    font-size: 16px;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 10px;
+}
+
+.order-dates {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    margin-bottom: 15px;
+}
+
+.order-date {
+    font-size: 12px;
+    color: #6B7280;
+}
+
+.order-date strong {
+    color: #374151;
+}
+
+.order-status {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.status-pending {
+    background: #FEE2E2;
+    color: #DC2626;
+}
+
+.status-assigned {
+    background: #FEF3C7;
+    color: #D97706;
+}
+
+.status-delivered {
+    background: #D1FAE5;
+    color: #059669;
+}
+
+.status-cancelled {
+    background: #F3F4F6;
+    color: #6B7280;
+}
+
+.order-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid #E5E7EB;
+}
+
+.btn-action {
+    padding: 6px 12px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 11px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    text-transform: uppercase;
+}
+
+.btn-edit {
+    background: #10B981;
+    color: white;
+}
+
+.btn-edit:hover {
+    background: #059669;
+}
+
+.btn-delete {
+    background: #EF4444;
+    color: white;
+}
+
+.btn-delete:hover {
+    background: #DC2626;
+}
+
+.btn-move {
+    background: #6366F1;
+    color: white;
+}
+
+.btn-move:hover {
+    background: #4F46E5;
+}
+
+/* Empty state */
+.empty-column {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 300px;
+    color: #9CA3AF;
+    text-align: center;
+}
+
+.empty-icon {
+    font-size: 3rem;
+    margin-bottom: 15px;
+    opacity: 0.5;
+}
+
+.empty-text {
+    font-size: 16px;
+    font-weight: 500;
+    margin-bottom: 5px;
+}
+
+.empty-subtext {
+    font-size: 14px;
+    opacity: 0.7;
+}
+
+/* Loading animation */
+.loading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 200px;
+}
+
+.spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid #E5E7EB;
+    border-top: 4px solid #000080;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Responsive design */
+@media (max-width: 1200px) {
+    .kanban-board {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    
+    .orders-container {
+        padding: 20px;
+    }
+}
+
+@media (max-width: 768px) {
+    .h1 h1 {
+        font-size: 2rem;
+    }
+    
+    .header {
+        flex-direction: column;
+        gap: 20px;
+        align-items: stretch;
+    }
+    
+    .button {
+        justify-content: center;
+    }
+}

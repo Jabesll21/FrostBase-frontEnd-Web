@@ -22,5 +22,122 @@
             <button class="button" id="button">Login</button>
         </div>
     </div>
+   <script src="services/api.js"></script>
+
+    <!-- Main Application Script -->
+    <script>
+        // Global functions for navigation
+        function showDashboard() {
+            // Reset active nav link
+            document.querySelectorAll('.nav-links a').forEach(link => {
+                link.classList.remove('active');
+            });
+            document.querySelector('.nav-links a[onclick="showDashboard()"]').classList.add('active');
+
+            // Show dashboard content
+            document.getElementById('content').innerHTML = `
+                <div class="welcome-section">
+                    <h1>Welcome to Frost Logistics</h1>
+                    <p>Monitor and control your refrigerated truck fleet in real-time</p>
+                    
+                    <div class="quick-actions">
+                        <div class="action-card" onclick="loadComponentGlobal('components/drivers')">
+                            <div class="icon">👨‍💼</div>
+                            <h3>Manage Drivers</h3>
+                            <p>Add, edit, and manage driver information and assignments</p>
+                        </div>
+                        
+                        <div class="action-card" onclick="loadComponentGlobal('components/trucks')">
+                            <div class="icon">🚛</div>
+                            <h3>Fleet Management</h3>
+                            <p>Monitor truck status, locations, and maintenance schedules</p>
+                        </div>
+                        
+                        <div class="action-card" onclick="loadComponentGlobal('components/orders')">
+                            <div class="icon">📦</div>
+                            <h3>Order Tracking</h3>
+                            <p>Track orders, delivery status, and route optimization</p>
+                        </div>
+                        
+                        <div class="action-card" onclick="loadComponentGlobal('components/routes')">
+                            <div class="icon">🗺️</div>
+                            <h3>Route Planning</h3>
+                            <p>Plan and optimize delivery routes for maximum efficiency</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        async function loadComponentGlobal(component, params = {}) {
+            console.log('Loading component globally:', component, params);
+            
+            // Update active nav link
+            document.querySelectorAll('.nav-links a').forEach(link => {
+                link.classList.remove('active');
+            });
+            
+            // Find and activate the correct nav link
+            const navLink = document.querySelector(`[onclick="loadComponentGlobal('${component}')"]`);
+            if (navLink) {
+                navLink.classList.add('active');
+            }
+
+            try {
+                const url = component + '/index.html';
+                const urlCode = component + '/code.js';
+                
+                const response = await fetch(url);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const html = await response.text();
+                document.getElementById('content').innerHTML = html;
+                
+                // Import and initialize the module
+                const module = await import(urlCode);
+                if (module.init) {
+                    await module.init(params);
+                }
+                
+            } catch (error) {
+                console.error('Error loading component:', error);
+                document.getElementById('content').innerHTML = `
+                    <div class="error-message">
+                        <h3>Error Loading Component</h3>
+                        <p>Failed to load ${component}. Please check if the files exist and try again.</p>
+                        <button onclick="showDashboard()" style="margin-top: 10px; padding: 8px 16px; background: #000080; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                            Back to Dashboard
+                        </button>
+                    </div>
+                `;
+            }
+        }
+
+        // Test API connection on page load
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                console.log('Testing API connection...');
+                const response = await apiService.getUsers();
+                console.log('API connection successful:', response);
+            } catch (error) {
+                console.error('API connection failed:', error);
+                // Show a warning but don't prevent the page from loading
+                const content = document.getElementById('content');
+                content.innerHTML = `
+                    <div class="error-message">
+                        <h3>⚠️ API Connection Warning</h3>
+                        <p>Cannot connect to the backend API at <strong>${apiService.baseURL}</strong></p>
+                        <p>Please make sure your backend server is running on <strong>http://localhost:5125</strong></p>
+                        <p>You can still navigate the interface, but data loading will not work until the backend is available.</p>
+                        <button onclick="location.reload()" style="margin-top: 10px; padding: 8px 16px; background: #000080; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                            Retry Connection
+                        </button>
+                    </div>
+                ` + content.innerHTML;
+            }
+        });
+    </script>
 </body>
 </html>

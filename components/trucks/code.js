@@ -1,142 +1,77 @@
-const trucks = [
-    {
-        id: 1,
-        brand: "Volvo",
-        model: "FH",
-        status: "In use",
-        licensePlate: "ABC-123-D",
-        photo: "volvo.png"
-    },
-    {
-        id: 2,
-        brand: "Volvo",
-        model: "BE",
-        status: "In use",
-        licensePlate: "EFG-456-H",
-        photo: "volvo.png"
-    },
-    {
-        id: 3,
-        brand: "Mercedes",
-        model: "Sprinter Van",
-        status: "Available",
-        licensePlate: "IJK-789-L",
-        photo: "mercedes.png"
-    },
-    {
-        id: 4,
-        brand: "Volvo",
-        model: "BE",
-        status: "In use",
-        licensePlate: "MNO-123-P",
-        photo: "volvo.png"
-    },
-    {
-        id: 5,
-        brand: "Volvo",
-        model: "BE",
-        status: "In use",
-        licensePlate: "QRS-456-T",
-        photo: "volvo.png"
-    },
-    {
-        id: 6,
-        brand: "Volvo",
-        model: "BE",
-        status: "Available",
-        licensePlate: "UVW-789-X",
-        photo: "volvo.png"
-    },
-     {
-        id: 1,
-        brand: "Volvo",
-        model: "FH",
-        status: "In use",
-        licensePlate: "ABC-123-D",
-        photo: "volvo.png"
-    },
-    {
-        id: 2,
-        brand: "Volvo",
-        model: "BE",
-        status: "In use",
-        licensePlate: "EFG-456-H",
-        photo: "volvo.png"
-    },
-    {
-        id: 3,
-        brand: "Mercedes",
-        model: "Sprinter Van",
-        status: "Available",
-        licensePlate: "IJK-789-L",
-        photo: "mercedes.png"
-    },
-     {
-        id: 1,
-        brand: "Volvo",
-        model: "FH",
-        status: "In use",
-        licensePlate: "ABC-123-D",
-        photo: "volvo.png"
-    },
-    {
-        id: 2,
-        brand: "Volvo",
-        model: "BE",
-        status: "In use",
-        licensePlate: "EFG-456-H",
-        photo: "volvo.png"
-    },
-    {
-        id: 3,
-        brand: "Mercedes",
-        model: "Sprinter Van",
-        status: "Available",
-        licensePlate: "IJK-789-L",
-        photo: "mercedes.png"
-    },
-     {
-        id: 1,
-        brand: "Volvo",
-        model: "FH",
-        status: "In use",
-        licensePlate: "ABC-123-D",
-        photo: "volvo.png"
-    },
-    {
-        id: 2,
-        brand: "Volvo",
-        model: "BE",
-        status: "In use",
-        licensePlate: "EFG-456-H",
-        photo: "volvo.png"
-    },
-    {
-        id: 3,
-        brand: "Mercedes",
-        model: "Sprinter Van",
-        status: "Available",
-        licensePlate: "IJK-789-L",
-        photo:  "mercedes.png"
-    },
-];
+import { getTrucks } from './services.js';
 
-let filteredTrucks = [...trucks];
+let allTrucks = [];
+let filteredTrucks = [];
 let currentFilter = 'all';
-
-
 
 export function init() {
     console.log('Initializing trucks interface...');
-    updateStats();
-    renderTrucks(filteredTrucks);
     setupEventListeners();
+    loadTrucks();
+}
+
+async function loadTrucks() {
+    try {
+        showLoading();
+        
+        allTrucks = await getTrucks();
+        console.log('Loaded trucks:', allTrucks);
+        
+        const mappedTrucks = allTrucks.map((truck, index) => ({
+            id: truck.id,
+            brand: truck.brand || 'Unknown',
+            model: truck.model || 'Unknown',
+            status: getStatusText(truck.state?.id),
+            licensePlate: truck.licensePlate || 'N/A',
+            photo: getPhotoByBrand(truck.brand)
+        }));
+        
+        filteredTrucks = [...mappedTrucks];
+        updateStats();
+        renderTrucks(filteredTrucks);
+        
+    } catch (error) {
+        console.error('Error loading trucks:', error);
+        showError();
+    } finally {
+        hideLoading();
+    }
+}
+
+function getStatusText(stateId) {
+    const statusMap = {
+        'AV': 'Available',
+        'IR': 'In use',
+        'IM': 'In maintenance',
+        'OS': 'Out of service'
+    };
+    return statusMap[stateId] || 'Unknown';
+}
+
+function getPhotoByBrand(brand) {
+    if (!brand) return 'default.png';
+    
+    const brandLower = brand.toLowerCase();
+    return `${brandLower}.png`;
+}
+
+function showLoading() {
+    const grid = document.getElementById('trucks-grid');
+    grid.innerHTML = '<div style="text-align: center; padding: 40px; grid-column: 1/-1;">Loading trucks...</div>';
+}
+
+function hideLoading() {
+}
+
+function showError() {
+    const grid = document.getElementById('trucks-grid');
+    grid.innerHTML = '<div style="text-align: center; padding: 40px; color: red; grid-column: 1/-1;">Error loading trucks. Please try again.</div>';
 }
 
 function updateStats() {
-    const total = trucks.length;
-    const inUse = trucks.filter(truck => truck.status.toLowerCase().replace(' ', '-') === 'in-use').length;
-    const available = trucks.filter(truck => truck.status.toLowerCase() === 'available').length;
+    const total = allTrucks.length;
+    const inUse = allTrucks.filter(truck => truck.state?.id === 'IR').length;
+    const available = allTrucks.filter(truck => truck.state?.id === 'AV').length;
 
     document.getElementById('total-trucks').textContent = total;
     document.getElementById('in-use-trucks').textContent = inUse;
@@ -168,14 +103,15 @@ function renderTrucks(trucksArray) {
                 <div class="truck-model">${truck.brand} ${truck.model}</div>
             </div>
             <div class="truck-image">
-                <img src="components/trucks/photos/${truck.photo}" alt="${truck.brand} ${truck.model}">
+                <img src="components/trucks/photos/${truck.photo}" alt="${truck.brand} ${truck.model}" 
+                     onerror="this.src='components/trucks/photos/default.png'">
             </div>
             <div class="truck-status">
                 <span class="status-badge ${statusClass}">${truck.status}</span>
             </div>
             <div class="truck-actions">
-                <button class="action-btn btn-edit" onclick="editTruck(${truck.id})">Edit</button>
-                <button class="action-btn btn-delete" onclick="deleteTruck(${truck.id})">Delete</button>
+                <button class="action-btn btn-edit" onclick="editTruck('${truck.id}')">Edit</button>
+                <button class="action-btn btn-delete" onclick="deleteTruck('${truck.id}')">Delete</button>
             </div>
         `;
         
@@ -187,7 +123,14 @@ function setupEventListeners() {
     const searchInput = document.getElementById('search-input');
     searchInput.addEventListener('input', (e) => {
         const searchTerm = e.target.value.toLowerCase();
-        filteredTrucks = trucks.filter(truck => 
+        filteredTrucks = allTrucks.map((truck, index) => ({
+            id: truck.id,
+            brand: truck.brand || 'Unknown',
+            model: truck.model || 'Unknown',
+            status: getStatusText(truck.state?.id),
+            licensePlate: truck.licensePlate || 'N/A',
+            photo: getPhotoByBrand(truck.brand)
+        })).filter(truck => 
             truck.licensePlate.toLowerCase().includes(searchTerm) ||
             truck.brand.toLowerCase().includes(searchTerm) ||
             truck.model.toLowerCase().includes(searchTerm)
@@ -206,9 +149,8 @@ function setupEventListeners() {
     });
 
     document.getElementById('add-button').addEventListener('click', () => {
-    loadComponent('components/trucks/register'); 
-});
-    
+        loadComponent('components/trucks/register'); 
+    });
 }
 
 function applyFilter() {
@@ -224,19 +166,17 @@ function applyFilter() {
 }
 
 window.editTruck = function(id) {
+    console.log('Edit truck ID:', id);
     alert(`Edit truck ID: ${id}`);
 }
 
 window.deleteTruck = function(id) {
     if (confirm('Are you sure you want to delete this truck?')) {
+        console.log('Delete truck ID:', id);
         alert(`Delete truck ID: ${id}`);
     }
 }
 
-
-
-
-//load component
 export function loadComponent(component){
     console.log(component);
     var url = component + '/index.html';
@@ -248,13 +188,11 @@ export function loadComponent(component){
         .catch( (error) => {console.error('Invalid HTML file'); })
 }
 
-//loading html
 async function loadHtml(html) {
     console.log('Loading HTML...')
     document.getElementById('content').innerHTML = html
 }
 
-//import module
 async function importModule(moduleUrl) {
     console.log('Importing Module ' + moduleUrl)
     let { init } = await import(moduleUrl)

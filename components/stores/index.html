@@ -1,0 +1,55 @@
+<link href="components/stores/style.css" rel="stylesheet">
+
+<div class="stores-container">
+    <!-- Header -->
+    <div class="header">
+        <div class="h1">
+            <h1>Stores</h1>
+        </div>
+        <div class="button">
+            <button id="add-button" class="add-button">
+                <i class="fas fa-plus"></i> Add New Store
+            </button>
+        </div>
+    </div>
+
+    <!-- Stats Summary -->
+    <div class="stats-summary">
+        <div class="stat-item">
+            <div class="stat-number" id="total-stores">0</div>
+            <div class="stat-label">Total Stores</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-number" id="active-stores">0</div>
+            <div class="stat-label">Active</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-number" id="pending-stores">0</div>
+            <div class="stat-label">Pending Setup</div>
+        </div>
+    </div>
+
+    <!-- Controls -->
+    <div class="controls">
+        <div class="search-container">
+            <i class="fas fa-search search-icon"></i>
+            <input type="text" class="search-input" placeholder="Search stores..." id="search-input">
+        </div>
+        
+        <div class="filter-buttons">
+            <button class="filter-btn active" data-filter="all">All</button>
+            <button class="filter-btn" data-filter="active">Active</button>
+            <button class="filter-btn" data-filter="incomplete">Incomplete</button>
+        </div>
+    </div>
+
+    <!-- Stores Grid -->
+    <div class="stores-grid-container">
+        <div id="stores-grid" class="stores-grid">
+            <!-- Loading state -->
+            <div class="loading">
+                <div class="spinner"></div>
+            </div>
+        </div>
+    </div>
+</div>

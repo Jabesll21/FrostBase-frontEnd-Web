@@ -1,18 +1,374 @@
-.content{
-    display: flex;
-    justify-content: center;
+/* Map Container */
+.map-container {
+    padding: 20px 40px;
+    max-width: 1400px;
+    margin: 0 auto;
+    background: #E0ECFD;
+    min-height: calc(100vh - 80px);
 }
-.map{
-    width: 90%;
-    height: 500px;
+
+/* Header */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+.controls {
+    display: flex;
+    gap: 15px;
+}
+
+.refresh-button, .filter-button {
+    background: #000080;
+    color: white;
+    border: none;
+    border-radius: 25px;
+    padding: 12px 24px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0, 0, 128, 0.2);
+}
+
+.refresh-button:hover, .filter-button:hover {
+    background: #000066;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 128, 0.3);
+}
+
+.filter-button {
+    background: #ffffff;
+    color: #000080;
+    border: 2px solid #000080;
+}
+
+.filter-button:hover {
+    background: #000080;
+    color: white;
+}
+
+/* Layout */
+.map-layout {
+    display: grid;
+    grid-template-columns: 1fr 350px;
+    gap: 20px;
+    height: calc(100vh - 200px);
+}
+
+/* Map Section */
+.map-section {
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+}
+
+.map-wrapper {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+.map {
+    width: 100%;
+    height: 100%;
     background: var(--fieldElementBorder);
     border-radius: 16px;
     display: flex;
     justify-content: center;
     align-items: center;
+    position: relative;
 }
-.map img{
+
+.map iframe {
     border-radius: 8px;
-    width: 90%;
-    height: 90%;
+    width: 100%;
+    height: 100%;
+}
+
+/* Map Overlay for markers */
+.map-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+}
+
+.truck-markers {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+.truck-marker {
+    position: absolute;
+    pointer-events: all;
+    cursor: pointer;
+    z-index: 10;
+}
+
+.marker-icon {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 12px;
+    border: 2px solid white;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    transition: all 0.3s ease;
+}
+
+.truck-marker-available .marker-icon {
+    background: #16a34a;
+}
+
+.truck-marker-in-route .marker-icon {
+    background: #d97706;
+}
+
+.truck-marker-maintenance .marker-icon {
+    background: #dc2626;
+}
+
+.truck-marker:hover .marker-icon,
+.truck-marker.selected .marker-icon {
+    transform: scale(1.2);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.marker-tooltip {
+    position: absolute;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: white;
+    border-radius: 8px;
+    padding: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    min-width: 200px;
+    display: none;
+    z-index: 100;
+}
+
+.truck-marker:hover .marker-tooltip {
+    display: block;
+}
+
+.tooltip-header {
+    font-weight: bold;
+    color: #000080;
+    margin-bottom: 5px;
+}
+
+.tooltip-content p {
+    margin: 3px 0;
+    font-size: 12px;
+    color: #374151;
+}
+
+/* Info Panel */
+.info-panel {
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+    padding: 25px;
+    overflow-y: auto;
+}
+
+.panel-header {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #000080;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #E0ECFD;
+}
+
+/* Stats Grid */
+.stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    margin-bottom: 25px;
+}
+
+.stat-card {
+    background: #f8fafc;
+    border-radius: 12px;
+    padding: 15px;
+    text-align: center;
+    border: 2px solid #e5e7eb;
+}
+
+.stat-number {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #000080;
+    display: block;
+}
+
+.stat-label {
+    font-size: 0.8rem;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 500;
+}
+
+/* Truck List */
+.truck-list-header {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 15px;
+}
+
+.truck-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.truck-item {
+    background: #f8fafc;
+    border-radius: 12px;
+    padding: 15px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+}
+
+.truck-item:hover,
+.truck-item.selected {
+    border-color: #000080;
+    background: #e0ecfd;
+    box-shadow: 0 4px 15px rgba(0, 0, 128, 0.1);
+}
+
+.truck-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.truck-plate {
+    font-weight: 700;
+    color: #000080;
+    font-size: 1rem;
+}
+
+.truck-status {
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.status-available {
+    background: #dcfce7;
+    color: #16a34a;
+}
+
+.status-in-route {
+    background: #fef3c7;
+    color: #d97706;
+}
+
+.status-maintenance {
+    background: #fee2e2;
+    color: #dc2626;
+}
+
+.truck-info {
+    font-size: 0.85rem;
+    color: #6b7280;
+    margin-bottom: 5px;
+}
+
+.truck-readings {
+    display: flex;
+    gap: 10px;
+    font-size: 0.8rem;
+    color: #374151;
+    margin-bottom: 5px;
+}
+
+.truck-time {
+    font-size: 0.75rem;
+    color: #9ca3af;
+}
+
+/* Legend */
+.legend {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 2px solid #e5e7eb;
+}
+
+.legend-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 10px;
+}
+
+.legend-items {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.legend-color {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+}
+
+.legend-color.available { background: #16a34a; }
+.legend-color.in-route { background: #d97706; }
+.legend-color.maintenance { background: #dc2626; }
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+    .map-layout {
+        grid-template-columns: 1fr;
+        grid-template-rows: 1fr auto;
+    }
+    
+    .info-panel {
+        max-height: 300px;
+    }
+}
+
+@media (max-width: 768px) {
+    .map-container {
+        padding: 15px 20px;
+    }
+
+    .controls {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
 }

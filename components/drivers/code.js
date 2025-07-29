@@ -59,7 +59,7 @@ function showLoading() {
             tableBody.innerHTML = `
                 <tr>
                     <td colspan="7" style="text-align: center; padding: 20px; color: #666;">
-                        🔄 Loading drivers...
+                         Loading drivers...
                     </td>
                 </tr>
             `;

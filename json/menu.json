@@ -26,9 +26,9 @@
         },
         {
             "id": 1005,
-            "text": "Container",
-            "icon": "box",
-            "component": "components/container"
+            "text": "Stores",
+            "icon": "store",
+            "component": "components/stores"
         },
         {
             "id": 1006,

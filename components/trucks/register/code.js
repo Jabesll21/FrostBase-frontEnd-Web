@@ -6,7 +6,6 @@ export function init() {
 function setupEventListeners() {
     // Back button
     document.getElementById('back-button').addEventListener('click', () => {
-        // Usa el sistema de navegación de tu aplicación
         loadComponent('components/trucks');
     });
 
@@ -29,11 +28,13 @@ function setupEventListeners() {
 
     // Real-time license plate formatting
     const licensePlateInput = document.getElementById('license_plate');
-    licensePlateInput.addEventListener('input', (e) => {
-        let value = e.target.value.toUpperCase();
-        value = value.replace(/[^A-Z0-9-]/g, '');
-        e.target.value = value;
-    });
+    if (licensePlateInput) {
+        licensePlateInput.addEventListener('input', (e) => {
+            let value = e.target.value.toUpperCase();
+            value = value.replace(/[^A-Z0-9-]/g, '');
+            e.target.value = value;
+        });
+    }
 }
 
 function validateLicensePlate(value) {
@@ -66,7 +67,7 @@ function validateForm() {
     return true;
 }
 
-function handleFormSubmit(e) {
+async function handleFormSubmit(e) {
     e.preventDefault();
     
     if (!validateForm()) {
@@ -78,35 +79,42 @@ function handleFormSubmit(e) {
     saveButton.classList.add('loading');
     saveButton.disabled = true;
     
-    // Collect form data
-    const formData = collectFormData();
-    
-    setTimeout(() => {
+    try {
+        // Collect form data
+        const formData = collectFormData();
+        
         console.log('Truck data to save:', formData);
         
+        const response = await apiService.createTruck(formData);
+        
+        if (response.Status === 1) {
+            showSuccessMessage();
+        } else {
+            throw new Error('Failed to create truck');
+        }
+        
+    } catch (error) {
+        console.error('Error saving truck:', error);
+        showAlert('Error saving truck. Please try again.');
+    } finally {
         // Hide loading state
         saveButton.classList.remove('loading');
         saveButton.disabled = false;
-        
-        showSuccessMessage();
-        
-    }, 1000);
+    }
 }
 
 function collectFormData() {
     const form = document.getElementById('truck-form');
     const formData = new FormData(form);
-    const data = {};
     
-    for (const [key, value] of formData.entries()) {
-        data[key] = value;
-    }
+    const truckData = {
+        Brand: formData.get('brand'),
+        Model: formData.get('model'),
+        LicensePlate: formData.get('license_plate'),
+        State: formData.get('state') === 'true' 
+    };
     
-    data.state = data.state === 'true';
-    
-    data.created_at = new Date().toISOString();
-    
-    return data;
+    return truckData;
 }
 
 function showSuccessMessage() {
@@ -125,37 +133,6 @@ function clearForm() {
 function showAlert(message) {
     alert(message);
 }
-
-
-////////////////////////////////////////////////////////////
-//Al usar este método, indicar que la photo es el nombre de la marca en minúsculas y con terminación .png
-async function saveTruck(truckData) {
-    try {
-        const response = await fetch('/api/trucks', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(truckData)
-        });
-        
-        if (!response.ok) {
-            throw new Error('Failed to save truck');
-        }
-        
-        const result = await response.json();
-        console.log('Truck saved successfully:', result);
-        return result;
-        
-    } catch (error) {
-        console.error('Error saving truck:', error);
-        showAlert('Error saving truck. Please try again.');
-        throw error;
-    }
-}
-
-
-
 
 //load component
 export function loadComponent(component){

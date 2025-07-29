@@ -1,3 +1,5 @@
+import { createUser } from '../services.js';
+
 export function init(params = {}) {
     console.log('Initializing add driver interface...');
     setupEventListeners();
@@ -34,34 +36,40 @@ function setupEventListeners() {
 
     // Real-time license plate formatting
     const licensePlateInput = document.getElementById('licensePlate');
-    licensePlateInput.addEventListener('input', (e) => {
-        let value = e.target.value.toUpperCase();
-        value = value.replace(/[^A-Z0-9-]/g, '');
-        
-        if (value.length <= 3) {
-            e.target.value = value;
-        } else if (value.length <= 6) {
-            e.target.value = value.slice(0, 3) + '-' + value.slice(3);
-        } else {
-            e.target.value = value.slice(0, 3) + '-' + value.slice(3, 6) + '-' + value.slice(6, 7);
-        }
-    });
+    if (licensePlateInput) {
+        licensePlateInput.addEventListener('input', (e) => {
+            let value = e.target.value.toUpperCase();
+            value = value.replace(/[^A-Z0-9-]/g, '');
+            
+            if (value.length <= 3) {
+                e.target.value = value;
+            } else if (value.length <= 6) {
+                e.target.value = value.slice(0, 3) + '-' + value.slice(3);
+            } else {
+                e.target.value = value.slice(0, 3) + '-' + value.slice(3, 6) + '-' + value.slice(6, 7);
+            }
+        });
+    }
 
     // Phone number formatting
     const phoneInput = document.getElementById('phone');
-    phoneInput.addEventListener('input', (e) => {
-        let value = e.target.value.replace(/\D/g, '');
-        if (value.length >= 10) {
-            value = value.slice(0, 10);
-            e.target.value = `+52 ${value.slice(0, 3)} ${value.slice(3, 6)} ${value.slice(6)}`;
-        } else {
-            e.target.value = value;
-        }
-    });
+    if (phoneInput) {
+        phoneInput.addEventListener('input', (e) => {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length >= 10) {
+                value = value.slice(0, 10);
+                e.target.value = `+52 ${value.slice(0, 3)} ${value.slice(3, 6)} ${value.slice(6)}`;
+            } else {
+                e.target.value = value;
+            }
+        });
+    }
 
     // Email validation
     const emailInput = document.getElementById('email');
-    emailInput.addEventListener('blur', validateEmail);
+    if (emailInput) {
+        emailInput.addEventListener('blur', validateEmail);
+    }
 
     // Set minimum dates
     setMinimumDates();
@@ -73,14 +81,35 @@ function setMinimumDates() {
     oneYearFromNow.setFullYear(oneYearFromNow.getFullYear() + 1);
     
     // License expiry should be at least one year from now
-    document.getElementById('licenseExpiry').min = oneYearFromNow.toISOString().split('T')[0];
+    const licenseExpiryInput = document.getElementById('licenseExpiry');
+    if (licenseExpiryInput) {
+        licenseExpiryInput.min = oneYearFromNow.toISOString().split('T')[0];
+    }
     
     // Hire date can be today or in the future
-    document.getElementById('hireDate').max = today;
+    const hireDateInput = document.getElementById('hireDate');
+    if (hireDateInput) {
+        hireDateInput.max = today;
+    }
 }
 
-function loadDriverData(driverId) {
+async function loadDriverData(driverId) {
     console.log('Loading driver data for ID:', driverId);
+    try {
+        const drivers = await getDrivers();
+        const driver = drivers.find(d => d.id === driverId);
+        
+        if (driver) {
+            // Llenar el formulario con los datos del conductor
+            document.getElementById('firstName').value = driver.name.firstName || '';
+            document.getElementById('lastName').value = driver.name.lastName || '';
+            document.getElementById('email').value = driver.email || '';
+            document.getElementById('phone').value = driver.phone || '';
+        }
+    } catch (error) {
+        console.error('Error loading driver data:', error);
+        showAlert('Error loading driver data. Please try again.');
+    }
 }
 
 function validateEmail() {
@@ -97,25 +126,13 @@ function validateEmail() {
     }
 }
 
-function validateLicensePlate(value) {
-    const pattern = /^[A-Z0-9]{3}-[0-9]{3}-[A-Z]$/;
-    return pattern.test(value);
-}
-
-function validateDriverLicense(value) {
-    const pattern = /^[A-Z]{2}[0-9]{9}$/;
-    return pattern.test(value.replace(/\s/g, ''));
-}
-
 function validateForm() {
     const form = document.getElementById('driver-form');
     const formData = new FormData(form);
     let isValid = true;
     
     const requiredFields = [
-        'firstName', 'lastName', 'email', 'phone', 'licenseNumber', 
-        'licenseExpiry', 'route', 'truck', 'licensePlate', 'status', 
-        'hireDate', 'experience'
+        'firstName', 'lastName', 'email', 'phone'
     ];
     
     requiredFields.forEach(field => {
@@ -129,35 +146,6 @@ function validateForm() {
     });
 
     if (!validateEmail()) {
-        isValid = false;
-    }
-
-    const licensePlate = formData.get('licensePlate');
-    if (licensePlate && !validateLicensePlate(licensePlate)) {
-        const input = document.getElementById('licensePlate');
-        showFieldError(input, 'Please enter a valid license plate format (ABC-123-D)');
-        isValid = false;
-    }
-
-    const licenseNumber = formData.get('licenseNumber');
-    if (licenseNumber && !validateDriverLicense(licenseNumber)) {
-        const input = document.getElementById('licenseNumber');
-        showFieldError(input, 'Please enter a valid driver\'s license number');
-        isValid = false;
-    }
-
-    const experience = parseInt(formData.get('experience'));
-    if (experience < 0 || experience > 50) {
-        const input = document.getElementById('experience');
-        showFieldError(input, 'Experience must be between 0 and 50 years');
-        isValid = false;
-    }
-
-    const licenseExpiry = new Date(formData.get('licenseExpiry'));
-    const today = new Date();
-    if (licenseExpiry <= today) {
-        const input = document.getElementById('licenseExpiry');
-        showFieldError(input, 'License expiry date must be in the future');
         isValid = false;
     }
 
@@ -206,41 +194,48 @@ function handleFormSubmit(e) {
     saveButton.classList.add('loading');
     saveButton.disabled = true;
 
-    setTimeout(() => {
-        const formData = new FormData(e.target);
-        const driverData = {
-            firstName: formData.get('firstName'),
-            lastName: formData.get('lastName'),
-            name: `${formData.get('firstName')} ${formData.get('lastName')}`,
-            email: formData.get('email'),
-            phone: formData.get('phone'),
-            licenseNumber: formData.get('licenseNumber'),
-            licenseExpiry: formData.get('licenseExpiry'),
-            route: formData.get('route'),
-            truck: formData.get('truck'),
-            licensePlate: formData.get('licensePlate'),
-            status: formData.get('status'),
-            hireDate: formData.get('hireDate'),
-            experience: formData.get('experience'),
-            notes: formData.get('notes')
-        };
+    const formData = new FormData(e.target);
+    
+    const userData = {
+        name: formData.get('firstName'),           
+        lastName: formData.get('lastName'),        
+        middleName: formData.get('middleName') || '', 
+        email: formData.get('email'),              
+        phone: formData.get('phone'),             
+        birthDate: new Date(formData.get('birthDate') || '1990-01-01'), 
+        password: formData.get('password') || 'defaultPassword123', 
+        isAdmin: false 
+    };
 
-        console.log('Driver data to save:', driverData);
-        
-        
-        saveButton.classList.remove('loading');
-        saveButton.disabled = false;
-        showSuccessMessage();
-        
-    }, 2000); 
+    console.log('Sending user data:', userData);
+
+    createUser(userData)
+        .then(result => {
+            console.log('User created successfully:', result);
+            showSuccessMessage();
+        })
+        .catch(error => {
+            console.error('Error creating user:', error);
+            showAlert('Error creating driver. Please try again.');
+        })
+        .finally(() => {
+            saveButton.classList.remove('loading');
+            saveButton.disabled = false;
+        });
 }
 
 function showSuccessMessage() {
-    document.getElementById('success-message').style.display = 'flex';
+    const successMessage = document.getElementById('success-message');
+    if (successMessage) {
+        successMessage.style.display = 'flex';
+    }
 }
 
 function hideSuccessMessage() {
-    document.getElementById('success-message').style.display = 'none';
+    const successMessage = document.getElementById('success-message');
+    if (successMessage) {
+        successMessage.style.display = 'none';
+    }
 }
 
 function showAlert(message) {

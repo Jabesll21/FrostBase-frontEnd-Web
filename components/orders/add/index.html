@@ -1,0 +1,97 @@
+<link href="components/orders/add/style.css" rel="stylesheet">
+
+<div class="add-order-container">
+    <div class="header">
+        <h1 class="title">Add New Order</h1>
+        <button class="back-button" id="back-button">
+            ← Back to Orders
+        </button>
+    </div>
+
+    <div class="form-container">
+        <form id="order-form" class="order-form">
+            
+            <div class="form-section">
+                <h2 class="section-title">Order Information</h2>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="store" class="form-label">Store</label>
+                        <select id="store" name="store" class="form-select" required>
+                            <option value="">Select a store...</option>
+                            <!-- Stores will be populated here -->
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="createdBy" class="form-label">Created By</label>
+                        <select id="createdBy" name="createdBy" class="form-select" required>
+                            <option value="">Select admin...</option>
+                            <!-- Admins will be populated here -->
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="orderDate" class="form-label">Order Date</label>
+                        <input type="datetime-local" id="orderDate" name="orderDate" class="form-input" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="deliveryDate" class="form-label">Expected Delivery</label>
+                        <input type="date" id="deliveryDate" name="deliveryDate" class="form-input" readonly>
+                        <small class="form-help">Calculated automatically based on route schedule</small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h2 class="section-title">Store Details</h2>
+                
+                <div class="store-preview" id="store-preview" style="display: none;">
+                    <div class="preview-card">
+                        <div class="preview-header">
+                            <h3 id="preview-store-name">Store Name</h3>
+                            <span class="preview-status" id="preview-status">Status</span>
+                        </div>
+                        <div class="preview-details">
+                            <div class="preview-item">
+                                <i class="fas fa-phone"></i>
+                                <span id="preview-phone">Phone</span>
+                            </div>
+                            <div class="preview-item">
+                                <i class="fas fa-map-marker-alt"></i>
+                                <span id="preview-address">Address</span>
+                            </div>
+                            <div class="preview-item">
+                                <i class="fas fa-route"></i>
+                                <span id="preview-route">Route Info</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button type="button" class="btn-cancel" id="cancel-button">Cancel</button>
+                <button type="submit" class="btn-save" id="save-button">
+                    <span class="btn-text">Create Order</span>
+                    <span class="btn-loading" style="display: none;">Creating...</span>
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <div class="success-message" id="success-message" style="display: none;">
+        <div class="success-content">
+            <div class="success-icon">✓</div>
+            <h3>Order Created Successfully!</h3>
+            <p>The order has been created and assigned to the selected store.</p>
+            <div class="order-summary" id="order-summary">
+                <!-- Order summary will be populated here -->
+            </div>
+            <button class="btn-continue" id="continue-button">Continue</button>
+        </div>
+    </div>
+</div>

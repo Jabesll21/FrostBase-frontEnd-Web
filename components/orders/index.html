@@ -7,52 +7,54 @@
             <h1>Orders</h1>
         </div>
         <div class="button">
-            <button class="filter-button" onclick="filterOrders()">
-                 Filters
-            </button>
-            <button class="add-button" onclick="addNewOrder()">
-                + New Order
+            <button id="add-button" class="add-button" onclick="addNewOrder()">
+                <i class="fas fa-plus"></i> Add New Order
             </button>
         </div>
     </div>
 
-    <div class="kanban-board">
-        <!-- Backlog Column -->
-        <div class="kanban-column backlog">
-            <div class="column-header">
-                <h3 class="column-title">Backlog</h3>
-                <span class="column-count" id="backlog-count">0</span>
-            </div>
-            <div class="column-content" id="backlog-orders">
-                <div class="loading">
-                    <div class="spinner"></div>
-                </div>
-            </div>
+    <!-- Stats Summary -->
+    <div class="stats-summary">
+        <div class="stat-item">
+            <div class="stat-number" id="total-orders">0</div>
+            <div class="stat-label">Total Orders</div>
         </div>
-
-        <!-- In Process Column -->
-        <div class="kanban-column in-process">
-            <div class="column-header">
-                <h3 class="column-title">In Process</h3>
-                <span class="column-count" id="process-count">0</span>
-            </div>
-            <div class="column-content" id="process-orders">
-                <div class="loading">
-                    <div class="spinner"></div>
-                </div>
-            </div>
+        <div class="stat-item">
+            <div class="stat-number" id="pending-orders">0</div>
+            <div class="stat-label">Pending</div>
         </div>
+        <div class="stat-item">
+            <div class="stat-number" id="delivered-orders">0</div>
+            <div class="stat-label">Delivered</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-number" id="cancelled-orders">0</div>
+            <div class="stat-label">Cancelled</div>
+        </div>
+    </div>
 
-        <!-- Completed Column -->
-        <div class="kanban-column completed">
-            <div class="column-header">
-                <h3 class="column-title">Completed</h3>
-                <span class="column-count" id="completed-count">0</span>
-            </div>
-            <div class="column-content" id="completed-orders">
-                <div class="loading">
-                    <div class="spinner"></div>
-                </div>
+    <!-- Controls -->
+    <div class="controls">
+        <div class="search-container">
+            <i class="fas fa-search search-icon"></i>
+            <input type="text" class="search-input" placeholder="Search orders..." id="search-input">
+        </div>
+        
+        <div class="filter-buttons">
+            <button class="filter-btn active" data-filter="all">All</button>
+            <button class="filter-btn" data-filter="pending">Pending</button>
+            <button class="filter-btn" data-filter="delivered">Delivered</button>
+            <button class="filter-btn" data-filter="cancelled">Cancelled</button>
+            <button class="filter-btn" data-filter="late">Late</button>
+        </div>
+    </div>
+
+    <!-- Orders Grid -->
+    <div class="orders-grid-container">
+        <div id="orders-grid" class="orders-grid">
+            <!-- Loading state -->
+            <div class="loading">
+                <div class="spinner"></div>
             </div>
         </div>
     </div>

@@ -1,82 +1,174 @@
+import { getOrders } from "./services.js"
 
 export function init() {
     console.log('Initializing orders...');
     loadOrders();
+    setupEventListeners();
 }
 
-// Mock data for demonstration
-const mockOrders = [
-    {
-        _id: "674a1b2c3d4e5f6789012345",
-        date: "2024-01-15T08:30:00Z",
-        delivered: "2024-01-18T14:00:00Z",
-        IDCreatedByUser: "user001",
-        IDStore: "store001",
-        storeName: "SuperMart Downtown",
-        IDStateOrder: "pending",
-        stateMessage: "Pending assignment"
-    },
-    {
-        _id: "674a1b2c3d4e5f6789012346",
-        date: "2024-01-16T09:15:00Z",
-        delivered: "2024-01-19T16:30:00Z",
-        IDCreatedByUser: "user002",
-        IDStore: "store002",
-        storeName: "Fresh Market North",
-        IDStateOrder: "assigned",
-        stateMessage: "Assigned to driver"
-    },
-    {
-        _id: "674a1b2c3d4e5f6789012347",
-        date: "2024-01-14T10:00:00Z",
-        delivered: "2024-01-17T12:00:00Z",
-        IDCreatedByUser: "user003",
-        IDStore: "store003",
-        storeName: "MegaStore South",
-        IDStateOrder: "delivered",
-        stateMessage: "Successfully delivered"
-    },
-    {
-        _id: "674a1b2c3d4e5f6789012348",
-        date: "2024-01-17T11:45:00Z",
-        delivered: "2024-01-20T13:00:00Z",
-        IDCreatedByUser: "user004",
-        IDStore: "store004",
-        storeName: "QuickShop East",
-        IDStateOrder: "pending",
-        stateMessage: "Pending review"
-    },
-    {
-        _id: "674a1b2c3d4e5f6789012349",
-        date: "2024-01-13T07:20:00Z",
-        delivered: "2024-01-16T15:45:00Z",
-        IDCreatedByUser: "user005",
-        IDStore: "store005",
-        storeName: "FoodLand West",
-        IDStateOrder: "delivered",
-        stateMessage: "Delivered and confirmed"
-    },
-    {
-        _id: "674a1b2c3d4e5f6789012350",
-        date: "2024-01-18T14:30:00Z",
-        delivered: "2024-01-21T11:00:00Z",
-        IDCreatedByUser: "user006",
-        IDStore: "store006",
-        storeName: "Express Market",
-        IDStateOrder: "assigned",
-        stateMessage: "In delivery process"
+function setupEventListeners() {
+    // Add button event listener
+    const addButton = document.getElementById('add-button');
+    if (addButton) {
+        addButton.addEventListener('click', () => {
+            loadComponent('components/orders/add');
+        });
     }
-];
 
-// State to column mapping
-const stateToColumn = {
-    'pending': 'backlog',
-    'assigned': 'process',
-    'delivered': 'completed',
-    'cancelled': 'backlog'
-};
+    // Search functionality
+    const searchInput = document.getElementById('search-input');
+    if (searchInput) {
+        searchInput.addEventListener('input', (e) => {
+            const searchTerm = e.target.value.toLowerCase();
+            filterOrders(searchTerm);
+        });
+    }
 
-// Format date function
+    // Filter buttons
+    const filterButtons = document.querySelectorAll('.filter-btn');
+    filterButtons.forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            filterButtons.forEach(b => b.classList.remove('active'));
+            e.target.classList.add('active');
+            
+            const filterType = e.target.dataset.filter;
+            applyFilter(filterType);
+        });
+    });
+}
+
+let allOrders = [];
+let filteredOrders = [];
+
+
+function loadOrders() {
+    // Show loading state
+    const ordersGrid = document.getElementById('orders-grid');
+    if (ordersGrid) {
+        ordersGrid.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+    }
+    
+    // Try to get orders from API, fallback to mock data
+    getOrders().then(response => {
+        if (response && response.data) {
+            allOrders = response.data;
+            filteredOrders = [...allOrders];
+            updateStats();
+            renderOrders(filteredOrders);
+        } else {
+            console.log('Using mock data');
+            allOrders = [...mockOrders];
+            filteredOrders = [...allOrders];
+            updateStats();
+            renderOrders(filteredOrders);
+        }
+    }).catch(error => {
+        console.error('Error loading orders:', error);
+        // Use mock data on error
+        allOrders = [...mockOrders];
+        filteredOrders = [...allOrders];
+        updateStats();
+        renderOrders(filteredOrders);
+    });
+}
+
+function updateStats() {
+    const stats = {
+        total: allOrders.length,
+        pending: allOrders.filter(order => order.state?.id === 'PO' || order.IDStateOrder === 'PO').length,
+        delivered: allOrders.filter(order => order.state?.id === 'DO' || order.IDStateOrder === 'DO').length,
+        cancelled: allOrders.filter(order => order.state?.id === 'CO' || order.IDStateOrder === 'CO').length,
+        late: allOrders.filter(order => order.state?.id === 'LO' || order.IDStateOrder === 'LO').length
+    };
+
+    document.getElementById('total-orders').textContent = stats.total;
+    document.getElementById('pending-orders').textContent = stats.pending;
+    document.getElementById('delivered-orders').textContent = stats.delivered;
+    document.getElementById('cancelled-orders').textContent = stats.cancelled;
+}
+
+function renderOrders(orders) {
+    const grid = document.getElementById('orders-grid');
+    
+    if (orders.length === 0) {
+        showEmptyState();
+        return;
+    }
+
+    grid.innerHTML = orders.map(order => createOrderCard(order)).join('');
+}
+
+function createOrderCard(order) {
+    const statusClass = getStatusClass(order.state?.id);
+    const statusText = getStatusDisplayName(order.state?.id);
+    const orderId = order.id || order._id;
+    const storeName = order.store?.name || order.storeName;
+    const createdBy = order.createdBy?.name ? 
+        `${order.createdBy.name.firstName} ${order.createdBy.name.lastName}` :
+        order.IDCreatedByUser;
+    
+    return `
+        <div class="order-card" data-order-id="${orderId}">
+            <div class="order-header">
+                <div class="order-id">#${orderId.slice(-8).toUpperCase()}</div>
+                <div class="order-status ${statusClass}">${statusText}</div>
+            </div>
+            <div class="order-store">${storeName}</div>
+            <div class="order-info">
+                <div class="info-item">
+                    <i class="fas fa-calendar-plus"></i>
+                    <span class="info-label">Created:</span>
+                    <span>${formatDate(order.date)}</span>
+                </div>
+                <div class="info-item">
+                    <i class="fas fa-calendar-check"></i>
+                    <span class="info-label">Delivery:</span>
+                    <span>${formatDate(order.deliverDate || order.delivered)}</span>
+                </div>
+                <div class="info-item">
+                    <i class="fas fa-user"></i>
+                    <span class="info-label">Created by:</span>
+                    <span>${createdBy}</span>
+                </div>
+            </div>
+            <div class="order-actions">
+                <button class="btn-action btn-view" onclick="viewOrder('${orderId}')">
+                    <i class="fas fa-eye"></i> View
+                </button>
+                <button class="btn-action btn-edit" onclick="editOrder('${orderId}')">
+                    <i class="fas fa-edit"></i> Edit
+                </button>
+                <button class="btn-action btn-status" onclick="changeStatus('${orderId}')">
+                    <i class="fas fa-exchange-alt"></i> Status
+                </button>
+                <button class="btn-action btn-delete" onclick="confirmDeleteOrder('${orderId}')">
+                    <i class="fas fa-trash"></i> Delete
+                </button>
+            </div>
+        </div>
+    `;
+}
+
+function getStatusClass(stateId) {
+    switch(stateId) {
+        case 'PO': return 'pending';
+        case 'DO': return 'delivered';
+        case 'CO': return 'cancelled';
+        case 'LO': return 'late';
+        default: return 'unknown';
+    }
+}
+
+function getStatusDisplayName(stateId) {
+    switch(stateId) {
+        case 'PO': return 'Pending';
+        case 'DO': return 'Delivered';
+        case 'CO': return 'Cancelled';
+        case 'LO': return 'Late';
+        default: return 'Unknown';
+    }
+}
+
 function formatDate(dateString) {
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', {
@@ -88,140 +180,71 @@ function formatDate(dateString) {
     });
 }
 
-// Get status display name
-function getStatusDisplayName(status) {
-    const statusNames = {
-        'pending': 'Pending',
-        'assigned': 'Assigned',
-        'delivered': 'Delivered',
-        'cancelled': 'Cancelled'
-    };
-    return statusNames[status] || status;
+function filterOrders(searchTerm) {
+    filteredOrders = allOrders.filter(order => {
+        const storeName = order.store?.name || order.storeName || '';
+        const orderId = order.id || order._id || '';
+        const stateMessage = order.state?.description || order.stateMessage || '';
+        
+        return storeName.toLowerCase().includes(searchTerm) ||
+               orderId.toLowerCase().includes(searchTerm) ||
+               stateMessage.toLowerCase().includes(searchTerm);
+    });
+    
+    renderOrders(filteredOrders);
 }
 
-// Create order card HTML
-function createOrderCard(order) {
-    const statusClass = `status-${order.IDStateOrder}`;
+function applyFilter(filterType) {
+    switch(filterType) {
+        case 'all':
+            filteredOrders = [...allOrders];
+            break;
+        case 'pending':
+            filteredOrders = allOrders.filter(order => 
+                (order.state?.id === 'PO') || (order.IDStateOrder === 'PO'));
+            break;
+        case 'delivered':
+            filteredOrders = allOrders.filter(order => 
+                (order.state?.id === 'DO') || (order.IDStateOrder === 'DO'));
+            break;
+        case 'cancelled':
+            filteredOrders = allOrders.filter(order => 
+                (order.state?.id === 'CO') || (order.IDStateOrder === 'CO'));
+            break;
+        case 'late':
+            filteredOrders = allOrders.filter(order => 
+                (order.state?.id === 'LO') || (order.IDStateOrder === 'LO'));
+            break;
+        default:
+            filteredOrders = [...allOrders];
+    }
     
-    return `
-        <div class="order-card" data-order-id="${order._id}">
-            <div class="order-id">#${order._id.slice(-8).toUpperCase()}</div>
-            <div class="order-store">${order.storeName}</div>
-            <div class="order-dates">
-                <div class="order-date">
-                    <strong>Created:</strong> ${formatDate(order.date)}
-                </div>
-                <div class="order-date">
-                    <strong>Delivery:</strong> ${formatDate(order.delivered)}
-                </div>
+    renderOrders(filteredOrders);
+}
+
+function showEmptyState() {
+    document.getElementById('orders-grid').innerHTML = `
+        <div class="empty-state">
+            <div class="empty-icon">
+                <i class="fas fa-shopping-bag"></i>
             </div>
-            <div class="order-status ${statusClass}">
-                ${getStatusDisplayName(order.IDStateOrder)}
-            </div>
-            <div class="order-actions">
-                <button class="btn-action btn-edit" onclick="editOrder('${order._id}')">
-                    Edit
-                </button>
-                <button class="btn-action btn-move" onclick="moveOrder('${order._id}')">
-                    Move
-                </button>
-                <button class="btn-action btn-delete" onclick="deleteOrder('${order._id}')">
-                    Delete
-                </button>
-            </div>
+            <div class="empty-text">No orders found</div>
+            <div class="empty-subtext">Add your first order to get started</div>
         </div>
     `;
-}
-
-// Create empty state HTML
-function createEmptyState(columnType) {
-    const emptyStates = {
-        'backlog': {
-            text: 'No pending orders',
-            subtext: 'New orders will appear here'
-        },
-        'process': {
-            text: 'No orders in process',
-            subtext: 'Assigned orders will appear here'
-        },
-        'completed': {
-            text: 'No completed orders',
-            subtext: 'Delivered orders will appear here'
-        }
-    };
-    
-    const state = emptyStates[columnType];
-    return `
-        <div class="empty-column">
-            <div class="empty-icon">${state.icon}</div>
-            <div class="empty-text">${state.text}</div>
-            <div class="empty-subtext">${state.subtext}</div>
-        </div>
-    `;
-}
-
-// Render orders in columns
-function renderOrders() {
-    const columns = {
-        'backlog': document.getElementById('backlog-orders'),
-        'process': document.getElementById('process-orders'),
-        'completed': document.getElementById('completed-orders')
-    };
-
-    const counts = {
-        'backlog': 0,
-        'process': 0,
-        'completed': 0
-    };
-
-    // Clear columns
-    Object.keys(columns).forEach(key => {
-        columns[key].innerHTML = '';
-    });
-
-    // Group orders by column
-    const ordersByColumn = {
-        'backlog': [],
-        'process': [],
-        'completed': []
-    };
-
-    mockOrders.forEach(order => {
-        const column = stateToColumn[order.IDStateOrder] || 'backlog';
-        ordersByColumn[column].push(order);
-        counts[column]++;
-    });
-
-    // Render orders in each column
-    Object.keys(ordersByColumn).forEach(columnKey => {
-        const orders = ordersByColumn[columnKey];
-        const columnElement = columns[columnKey];
-
-        if (orders.length === 0) {
-            columnElement.innerHTML = createEmptyState(columnKey);
-        } else {
-            columnElement.innerHTML = orders.map(order => createOrderCard(order)).join('');
-        }
-
-        // Update counter
-        const countElement = document.getElementById(`${columnKey}-count`);
-        if (countElement) {
-            countElement.textContent = counts[columnKey];
-        }
-    });
-}
-
-// Load orders with simulated delay
-function loadOrders() {
-    setTimeout(() => {
-        renderOrders();
-    }, 1000);
 }
 
 // Action functions
 function addNewOrder() {
     console.log('Adding new order...');
-    alert('Add New Order functionality\n\nThis would open a modal or form to create a new order.');
+    loadComponent('components/orders/add');
+}
+
+function viewOrder(orderId) {
+    const order = allOrders.find(o => o._id === orderId);
+    if (order) {
+        alert(`Order Details:\n\nID: #${order._id.slice(-8).toUpperCase()}\nStore: ${order.storeName}\nStatus: ${order.stateMessage}\nCreated: ${formatDate(order.date)}\nDelivery: ${formatDate(order.delivered)}\nCreated by: ${order.IDCreatedByUser}`);
+    }
 }
 
 function editOrder(orderId) {
@@ -229,27 +252,110 @@ function editOrder(orderId) {
     alert(`Editing order: #${orderId.slice(-8).toUpperCase()}\n\nThis would open an edit form.`);
 }
 
-function moveOrder(orderId) {
-    console.log('Moving order:', orderId);
-    alert(`Moving order: #${orderId.slice(-8).toUpperCase()}\n\nThis would allow changing the order state.`);
-}
-
-function deleteOrder(orderId) {
-    console.log('Deleting order:', orderId);
-    if (confirm(`Are you sure you want to delete order #${orderId.slice(-8).toUpperCase()}?`)) {
-        alert('Order deleted successfully');
-        renderOrders();
+function changeStatus(orderId) {
+    const order = allOrders.find(o => o._id === orderId);
+    if (order) {
+        const statuses = [
+            { id: 'PO', name: 'Pending order' },
+            { id: 'DO', name: 'Delivered order' },
+            { id: 'CO', name: 'Cancelled order' },
+            { id: 'LO', name: 'Late order' }
+        ];
+        
+        const statusOptions = statuses.map(s => `${s.id}: ${s.name}`).join('\n');
+        const newStatus = prompt(`Change status for order #${orderId.slice(-8).toUpperCase()}\n\nAvailable statuses:\n${statusOptions}\n\nEnter status ID (PO, DO, CO, LO):`);
+        
+        if (newStatus && statuses.find(s => s.id === newStatus.toUpperCase())) {
+            // Update the order status in mock data
+            const statusData = statuses.find(s => s.id === newStatus.toUpperCase());
+            order.IDStateOrder = statusData.id;
+            order.stateMessage = statusData.name;
+            
+            updateStats();
+            renderOrders(filteredOrders);
+            showToast('Order status updated successfully');
+        }
     }
 }
 
-function filterOrders() {
-    console.log('Opening filters...');
-    alert('Filter functionality\n\nThis would implement filters by:\n- State\n- Date\n- Store\n- Driver\n- Date range');
+async function confirmDeleteOrder(orderId) {
+    const order = allOrders.find(o => o._id === orderId);
+    if (order && confirm(`Are you sure you want to delete order #${orderId.slice(-8).toUpperCase()} for ${order.storeName}?`)) {
+        try {
+            const index = allOrders.findIndex(o => o._id === orderId);
+            if (index > -1) {
+                allOrders.splice(index, 1);
+                filteredOrders = filteredOrders.filter(o => o._id !== orderId);
+                updateStats();
+                renderOrders(filteredOrders);
+                showToast('Order deleted successfully');
+            }
+        } catch (error) {
+            console.error('Error deleting order:', error);
+            alert('Error deleting order: ' + error.message);
+        }
+    }
+}
+
+function showToast(message, type = 'success') {
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    toast.textContent = message;
+    toast.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: ${type === 'success' ? '#16a34a' : '#dc2626'};
+        color: white;
+        padding: 12px 24px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        z-index: 1000;
+        font-weight: 500;
+    `;
+    
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 3000);
 }
 
 // Make functions global for onclick handlers
 window.addNewOrder = addNewOrder;
+window.viewOrder = viewOrder;
 window.editOrder = editOrder;
-window.moveOrder = moveOrder;
-window.deleteOrder = deleteOrder;
-window.filterOrders = filterOrders;
+window.changeStatus = changeStatus;
+window.confirmDeleteOrder = confirmDeleteOrder;
+
+// Function to load components (should be available globally)
+function loadComponent(component, params = {}) {
+    console.log('Loading component:', component, params);
+    var url = component + '/index.html';
+    var urlCode = '../../../' + component + '/code.js';
+    
+    fetch(url)
+        .then((response) => { return response.text(); })
+        .then((html) => { loadHtml(html) })
+        .then(() => { importModule(urlCode, params) })
+        .catch((error) => { console.error('Invalid HTML file:', error); });
+}
+
+// Function to load HTML
+async function loadHtml(html) {
+    console.log('Loading HTML...')
+    document.getElementById('content').innerHTML = html;
+}
+
+// Function to import module
+async function importModule(moduleUrl, params = {}) {
+    console.log('Importing Module ' + moduleUrl);
+    try {
+        let { init } = await import(moduleUrl);
+        init(params);
+    } catch (error) {
+        console.error('Error importing module:', error);
+        showAlert('Error loading page. Please try again.');
+    }
+}
+
+function showAlert(message) {
+    alert(message);
+}

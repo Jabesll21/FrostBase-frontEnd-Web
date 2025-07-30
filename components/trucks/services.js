@@ -39,9 +39,55 @@ export async function createTruck(truckData) {
         }
         
         const result = await response.json();
-        return result.data;
+        return result;
     } catch (error) {
         console.error('Error creating truck:', error);
+        throw error;
+    }
+}
+
+// Actualizar camión
+export async function updateTruck(truckData) {
+    try {
+        const url = config.api.url + "Truck";
+        
+        const response = await fetch(url, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(truckData)
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const result = await response.json();
+        return result.data;
+    } catch (error) {
+        console.error('Error updating truck:', error);
+        throw error;
+    }
+}
+
+// Eliminar camión
+export async function deleteTruck(id) {
+    try {
+        const url = config.api.url + "Truck/" + id;
+        
+        const response = await fetch(url, {
+            method: 'DELETE'
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const result = await response.json();
+        return result.data; // Devuelve el camión actualizado
+    } catch (error) {
+        console.error('Error deleting truck:', error);
         throw error;
     }
 }

@@ -1,4 +1,4 @@
-import { getTrucks } from './services.js';
+import { getTrucks, deleteTruck } from './services.js';
 
 let allTrucks = [];
 let filteredTrucks = [];
@@ -100,24 +100,24 @@ function renderTrucks(trucksArray) {
         card.className = "truck-card";
         
         const statusClass = truck.status.toLowerCase().replace(' ', '-');
-        
-        card.innerHTML = `
-            <div class="truck-header">
-                <div class="license-plate">${truck.licensePlate}</div>
-                <div class="truck-model">${truck.brand} ${truck.model}</div>
-            </div>
-            <div class="truck-image">
-                <img src="components/trucks/photos/${truck.photo}" alt="${truck.brand} ${truck.model}" 
-                     onerror="this.src='components/trucks/photos/default.png'">
-            </div>
-            <div class="truck-status">
-                <span class="status-badge ${statusClass}">${truck.status}</span>
-            </div>
-            <div class="truck-actions">
-                <button class="action-btn btn-edit" onclick="editTruck('${truck.id}')">Edit</button>
-                <button class="action-btn btn-delete" onclick="deleteTruck('${truck.id}')">Delete</button>
-            </div>
-        `;
+
+            card.innerHTML = `
+                <div class="truck-header">
+                    <div class="license-plate">${truck.licensePlate}</div>
+                    <div class="truck-model">${truck.brand} ${truck.model}</div>
+                </div>
+                <div class="truck-image">
+                    <img src="components/trucks/photos/${truck.photo}" alt="${truck.brand} ${truck.model}" 
+                         onerror="this.src='components/trucks/photos/default.png'">
+                </div>
+                <div class="truck-status">
+                    <span class="status-badge ${statusClass}">${truck.status}</span>
+                </div>
+                <div class="truck-actions">
+                    <button class="action-btn btn-edit" onclick="editTruck('${truck.id}')">Edit</button>
+                    <button class="action-btn btn-delete" onclick="deleteTruck('${truck.id}')">Delete</button>
+                </div>
+            `;
         
         grid.appendChild(card);
     });
@@ -164,10 +164,24 @@ window.editTruck = function(id) {
     alert(`Edit truck ID: ${id}`);
 }
 
-window.deleteTruck = function(id) {
-    if (confirm('Are you sure you want to delete this truck?')) {
-        console.log('Delete truck ID:', id);
-        alert(`Delete truck ID: ${id}`);
+window.deleteTruck = async function(id) {
+    if (confirm('¿Are you sure that you want to delete this truck? This will change the state to "Out of service".')) {
+        try {
+            showLoading();
+            const deletedTruck = await deleteTruck(id);
+            console.log('Truck deleted:', deletedTruck);
+            
+            // Actualiza la lista de camiones
+            await loadTrucks();
+            
+            // Muestra un mensaje de éxito
+            alert('Changed state to "Out of service" successfully.');
+        } catch (error) {
+            console.error('Error deleting truck:', error);
+            alert('Error trying to delete the truck. Try again later.');
+        } finally {
+            hideLoading();
+        }
     }
 }
 

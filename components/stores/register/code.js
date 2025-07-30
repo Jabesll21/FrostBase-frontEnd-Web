@@ -1,12 +1,25 @@
-import { createStore } from '../services.js';
+import { createStore, getStoreById, updateStore } from '../services.js';
+
+let currentStoreId = null;
+let isEditMode = false;
 
 export function init(params = {}) {
-    console.log('Initializing add store interface...');
-    setupEventListeners();
+    console.log('Initializing store interface...', params);
     
+    // Verificar si estamos en modo edición
     if (params.storeId) {
+        currentStoreId = params.storeId;
+        isEditMode = true;
         document.querySelector('.title').textContent = 'Edit Store';
+        document.querySelector('.btn-save .btn-text').textContent = 'Update Store';
+        loadStoreData(params.storeId);
+    } else {
+        isEditMode = false;
+        document.querySelector('.title').textContent = 'Add New Store';
+        document.querySelector('.btn-save .btn-text').textContent = 'Save Store';
     }
+    
+    setupEventListeners();
 }
 
 function setupEventListeners() {
@@ -59,6 +72,59 @@ function setupEventListeners() {
     }
 }
 
+async function loadStoreData(storeId) {
+    console.log('Loading store data for ID:', storeId);
+    try {
+        showLoadingForm();
+        const store = await getStoreById(storeId);
+        
+        if (store) {
+            console.log('Store data loaded:', store);
+            
+            // Llenar el formulario con los datos de la tienda
+            document.getElementById('name').value = store.name || store.Name || '';
+            document.getElementById('phone').value = store.phone || store.Phone || '';
+            document.getElementById('address').value = store.location?.address || store.Location?.Address || '';
+            document.getElementById('latitude').value = store.location?.latitude || store.Location?.Latitude || '';
+            document.getElementById('longitude').value = store.location?.longitude || store.Location?.Longitude || '';
+            
+            hideLoadingForm();
+        } else {
+            throw new Error('Store not found');
+        }
+    } catch (error) {
+        console.error('Error loading store data:', error);
+        hideLoadingForm();
+        alert('Error loading store data: ' + error.message);
+        loadComponent('components/stores');
+    }
+}
+
+function showLoadingForm() {
+    const form = document.getElementById('store-form');
+    const loadingDiv = document.createElement('div');
+    loadingDiv.id = 'form-loading';
+    loadingDiv.innerHTML = `
+        <div style="text-align: center; padding: 50px; color: #6b7280;">
+            <div style="display: inline-block; width: 40px; height: 40px; border: 4px solid #E5E7EB; border-top: 4px solid #000080; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+            <p style="margin-top: 20px;">Loading store data...</p>
+        </div>
+    `;
+    
+    if (form) {
+        form.style.display = 'none';
+        form.parentNode.appendChild(loadingDiv);
+    }
+}
+
+function hideLoadingForm() {
+    const form = document.getElementById('store-form');
+    const loadingDiv = document.getElementById('form-loading');
+    
+    if (form) form.style.display = 'block';
+    if (loadingDiv) loadingDiv.remove();
+}
+
 function validateCoordinates() {
     const lat = parseFloat(document.getElementById('latitude').value);
     const lng = parseFloat(document.getElementById('longitude').value);
@@ -89,7 +155,9 @@ function validateForm() {
     
     requiredFields.forEach(field => {
         const input = document.getElementById(field);
-        if (!formData.get(field) || formData.get(field).trim() === '') {
+        const value = formData.get(field);
+        
+        if (!value || value.trim() === '') {
             showFieldError(input, 'This field is required');
             isValid = false;
         } else {
@@ -144,41 +212,83 @@ function handleFormSubmit(e) {
     }
 
     const saveButton = document.querySelector('.btn-save');
+    const originalText = saveButton.querySelector('.btn-text').textContent;
     saveButton.classList.add('loading');
     saveButton.disabled = true;
+    saveButton.querySelector('.btn-text').style.display = 'none';
+    saveButton.querySelector('.btn-loading').style.display = 'inline';
 
     const formData = new FormData(e.target);
     
-    const storeData = {
-        name: formData.get('name'),
-        phone: formData.get('phone'),
-        location: {
-            address: formData.get('address'),
-            latitude: parseFloat(formData.get('latitude')),
-            longitude: parseFloat(formData.get('longitude'))
-        },
-        active: true // Default to active
-    };
+    if (isEditMode) {
+        const updateData = {
+            Id: currentStoreId,
+            Name: formData.get('name').trim(),
+            Phone: formData.get('phone').trim(),
+            Location: {
+                Address: formData.get('address').trim(),
+                Latitude: parseFloat(formData.get('latitude')),
+                Longitude: parseFloat(formData.get('longitude'))
+            },
+            Active: true 
+        };
 
-    console.log('Sending store data:', storeData);
+        console.log('Updating store with data:', updateData);
 
-    createStore(storeData)
-        .then(result => {
-            console.log('Store created successfully:', result);
-            showSuccessMessage();
-        })
-        .catch(error => {
-            console.error('Error creating store:', error);
-            alert('Error creating store. Please try again.');
-        })
-        .finally(() => {
-            saveButton.classList.remove('loading');
-            saveButton.disabled = false;
-        });
+        updateStore(currentStoreId, updateData)
+            .then(result => {
+                console.log('Store updated successfully:', result);
+                showSuccessMessage('Store Updated Successfully!', 'The store information has been updated.');
+            })
+            .catch(error => {
+                console.error('Error updating store:', error);
+                alert('Error updating store: ' + error.message);
+            })
+            .finally(() => {
+                saveButton.classList.remove('loading');
+                saveButton.disabled = false;
+                saveButton.querySelector('.btn-text').style.display = 'inline';
+                saveButton.querySelector('.btn-loading').style.display = 'none';
+            });
+    } else {
+        const storeData = {
+            Name: formData.get('name').trim(),
+            Phone: formData.get('phone').trim(),
+            Location: {
+                Address: formData.get('address').trim(),
+                Latitude: parseFloat(formData.get('latitude')),
+                Longitude: parseFloat(formData.get('longitude'))
+            }
+        };
+
+        console.log('Creating store with data:', storeData);
+
+        createStore(storeData)
+            .then(result => {
+                console.log('Store created successfully:', result);
+                showSuccessMessage('Store Added Successfully!', 'The store has been registered and added to your network.');
+            })
+            .catch(error => {
+                console.error('Error creating store:', error);
+                alert('Error creating store: ' + error.message);
+            })
+            .finally(() => {
+                saveButton.classList.remove('loading');
+                saveButton.disabled = false;
+                saveButton.querySelector('.btn-text').style.display = 'inline';
+                saveButton.querySelector('.btn-loading').style.display = 'none';
+            });
+    }
 }
 
-function showSuccessMessage() {
+function showSuccessMessage(title = 'Success!', message = 'Operation completed successfully.') {
     const successMessage = document.getElementById('success-message');
+    const titleElement = successMessage.querySelector('h3');
+    const messageElement = successMessage.querySelector('p');
+    
+    if (titleElement) titleElement.textContent = title;
+    if (messageElement) messageElement.textContent = message;
+    
     if (successMessage) {
         successMessage.style.display = 'flex';
     }
@@ -214,7 +324,7 @@ async function loadHtml(html) {
 async function importModule(moduleUrl, params = {}) {
     console.log('Importing Module ' + moduleUrl);
     try {
-        let { init } = await import(moduleUrl);
+        let { init } = await import(moduleUrl + '?v=' + Date.now());
         init(params);
     } catch (error) {
         console.error('Error importing module:', error);

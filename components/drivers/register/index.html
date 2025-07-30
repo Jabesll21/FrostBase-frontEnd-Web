@@ -24,82 +24,43 @@
                     <div class="form-group">
                         <label for="lastName" class="form-label">Last Name</label>
                         <input type="text" id="lastName" name="lastName" class="form-input" 
-                               placeholder="e.g., Pérez García" required>
+                               placeholder="e.g., Pérez" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="middleName" class="form-label">Middle Name</label>
+                        <input type="text" id="middleName" name="middleName" class="form-input" 
+                               placeholder="e.g., García">
                     </div>
                 </div>
 
                 <div class="form-row">
                     <div class="form-group">
                         <label for="email" class="form-label">Email Address</label>
-                        <input type="email" id="email" name="email" class="form-input" 
+                        <input type="email" id="email" name="email" class="form-input"  autocomplete="off"
                                placeholder="e.g., juan.perez@frost.com" required>
                     </div>
                     
+                    <div class="form-group">
+                        <label for="password" class="form-label">Password</label>
+                        <input type="password" id="password" name="password" class="form-input" autocomplete="off" minlength="8" maxlength="20"
+                               placeholder="********" required>
+                    </div>
+                </div>
+
+                <div class="form-row">
                     <div class="form-group">
                         <label for="phone" class="form-label">Phone Number</label>
                         <input type="tel" id="phone" name="phone" class="form-input" 
                                placeholder="e.g., +52 664 123 4567" required>
                     </div>
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="licenseNumber" class="form-label">Driver's License Number</label>
-                        <input type="text" id="licenseNumber" name="licenseNumber" class="form-input" 
-                               placeholder="e.g., DL123456789" required>
-                    </div>
                     
                     <div class="form-group">
-                        <label for="licenseExpiry" class="form-label">License Expiry Date</label>
-                        <input type="date" id="licenseExpiry" name="licenseExpiry" class="form-input" required>
+                        <label for="birth" class="form-label">Birthdate</label>
+                        <input type="date" id="birth" name="birth" class="form-input" required>
                     </div>
                 </div>
             </div>
-
-            <div class="form-section">
-                <h2 class="section-title">Work Assignment</h2>
-                
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="route" class="form-label">Assigned Route</label>
-                        <select id="route" name="route" class="form-input" required>
-                            <option value="">Select Route</option>
-                            <option value="Otay">Otay</option>
-                            <option value="El Refugio">El Refugio</option>
-                            <option value="Zona Río">Zona Río</option>
-                            <option value="Villa del Real">Villa del Real</option>
-                            <option value="El Nido">El Nido</option>
-                            <option value="La Mesa">La Mesa</option>
-                            <option value="Tijuana Centro">Tijuana Centro</option>
-                            <option value="Rosarito">Rosarito</option>
-                        </select>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="truck" class="form-label">Assigned Truck</label>
-                        <select id="truck" name="truck" class="form-input" required>
-                            <option value="">Select Truck Brand</option>
-                            <option value="Mercedes">Mercedes</option>
-                            <option value="Volvo">Volvo</option>
-                            <option value="Scania">Scania</option>
-                            <option value="MAN">MAN</option>
-                            <option value="DAF">DAF</option>
-                            <option value="Iveco">Iveco</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="licensePlate" class="form-label">Truck License Plate</label>
-                        <input type="text" id="licensePlate" name="licensePlate" class="form-input" 
-                               placeholder="e.g., ABC-123-D" maxlength="9" required>
-                    </div>
-                    
-                    
-                </div>
-            </div>
-
 
             <div class="form-actions">
                 <button type="button" id="cancel-button" class="btn-cancel">Cancel</button>

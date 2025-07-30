@@ -1,5 +1,25 @@
 import { config } from '../../js/config.js'
 
+export async function getTruckReadings() {
+    try {
+        const url = config.api.url + "Reading";
+        console.log('Fetching truck readings from:', url);
+        
+        const response = await fetch(url);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const result = await response.json();
+        console.log('Truck readings response:', result);
+        
+        return result;
+    } catch (error) {
+        console.error('Error fetching truck readings:', error);
+        throw error;
+    }
+}
+
 // Obtener ubicaciones de camiones
 export async function getTruckLocations() {
     try {
@@ -75,20 +95,6 @@ async function getMockTruckData() {
                 date: new Date().toISOString(),
                 latitude: 32.5020,
                 longitude: -117.0800
-            }
-        },
-        {
-            id: "674a4001000000000000001e",
-            licensePlate: "TIJ-005-RF",
-            brand: "Mack",
-            model: "Anthem 2021", 
-            state: { id: "AV", message: "Available" },
-            lastReading: {
-                temperature: 2.8,
-                humidity: 79,
-                date: new Date().toISOString(),
-                latitude: 32.4850,
-                longitude: -117.0200
             }
         }
     ];

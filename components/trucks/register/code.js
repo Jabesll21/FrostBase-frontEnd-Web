@@ -1,3 +1,5 @@
+import { createTruck } from '../services.js';
+
 export function init() {
     console.log('Initializing add truck interface...');
     setupEventListeners();
@@ -85,7 +87,7 @@ async function handleFormSubmit(e) {
         
         console.log('Truck data to save:', formData);
         
-        const response = await apiService.createTruck(formData);
+        const response = await createTruck(formData);
         
         if (response.Status === 1) {
             showSuccessMessage();

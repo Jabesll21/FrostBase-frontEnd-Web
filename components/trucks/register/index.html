@@ -22,9 +22,11 @@
                             <option value="Volvo">Volvo</option>
                             <option value="Mercedes">Mercedes</option>
                             <option value="Scania">Scania</option>
-                            <option value="MAN">MAN</option>
-                            <option value="DAF">DAF</option>
-                            <option value="Iveco">Iveco</option>
+                            <option value="Peterbilt">Peterbilt</option>
+                            <option value="Mack">Mack</option>
+                            <option value="Kenworth">Kenworth</option>
+                            <option value="International">International</option>
+                            <option value="Freightliner">Freightliner</option>
                         </select>
                     </div>
                     
@@ -39,15 +41,16 @@
                     <div class="form-group">
                         <label for="license_plate" class="form-label">License Plate</label>
                         <input type="text" id="license_plate" name="license_plate" class="form-input" 
-                               placeholder="e.g., ABC-123-D" required>
+                               placeholder="e.g., ABC-123-D" required maxlength="9" minlength="9">
                     </div>
                     
                     <div class="form-group">
                         <label for="state" class="form-label">Status</label>
                         <select id="state" name="state" class="form-input" required>
                             <option value="">Select Status</option>
-                            <option value="true">Active</option>
-                            <option value="false">Inactive</option>
+                            <option value="AV">Available</option>
+                            <option value="IM">In maintenance</option>
+                            <option value="OS">Out of service</option>
                         </select>
                     </div>
                 </div>

@@ -54,3 +54,13 @@ async function importModule(moduleUrl) {
     let { init } = await import(moduleUrl)
     init()
 }
+
+document.addEventListener('DOMContentLoaded', () => {
+    const userData = sessionStorage.getItem('userData');
+    if (!userData) {
+        window.location.href = 'index.html';
+    }
+    // Opcional: Mostrar datos del usuario en la interfaz
+    const user = JSON.parse(userData);
+    console.log('Usuario logueado:', user);
+});

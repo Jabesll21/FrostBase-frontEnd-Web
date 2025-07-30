@@ -5,5 +5,6 @@ export function init(){
 
 function logout(){
     //clear credentials
+    sessionStorage.removeItem('userData');
     window.location.href = 'index.html'
 }

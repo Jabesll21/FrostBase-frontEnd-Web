@@ -1,4 +1,4 @@
-import { getTrucks, deleteTruck } from './services.js';
+import { getTrucks, deleteTruck, updateTruck } from './services.js';
 
 let allTrucks = [];
 let filteredTrucks = [];
@@ -98,9 +98,44 @@ function renderTrucks(trucksArray) {
     trucksArray.forEach(truck => {
         const card = document.createElement('div');
         card.className = "truck-card";
+        card.dataset.id = truck.id;
         
         const statusClass = truck.status.toLowerCase().replace(' ', '-');
-
+        
+        if (truck.isEditing) {
+            // Modo edición
+            card.innerHTML = `
+                <div class="truck-header">
+                    <input type="text" class="edit-input" value="${truck.licensePlate}" placeholder="License Plate" id="edit-license-${truck.id}">
+                    <input type="text" class="edit-input" value="${truck.model}" placeholder="Model" id="edit-model-${truck.id}">
+                </div>
+                <div class="truck-status">
+                    <select class="edit-select" id="edit-brand-${truck.id}">
+                        <option value="Volvo" ${truck.brand === 'Volvo' ? 'selected' : ''}>Volvo</option>
+                        <option value="Mercedes" ${truck.brand === 'Mercedes' ? 'selected' : ''}>Mercedes</option>
+                        <option value="Scania" ${truck.brand === 'Scania' ? 'selected' : ''}>Scania</option>
+                        <option value="Peterbilt" ${truck.brand === 'Peterbilt' ? 'selected' : ''}>Peterbilt</option>
+                        <option value="Mack" ${truck.brand === 'Mack' ? 'selected' : ''}>Mack</option>
+                        <option value="Kenworth" ${truck.brand === 'Kenworth' ? 'selected' : ''}>Kenworth</option>
+                        <option value="International" ${truck.brand === 'International' ? 'selected' : ''}>International</option>
+                        <option value="Freightliner" ${truck.brand === 'Freightliner' ? 'selected' : ''}>Freightliner</option>
+                    </select>
+                </div>
+                <div class="truck-status">
+                    <select class="edit-select" id="edit-status-${truck.id}">
+                        <option value="AV" ${truck.status === 'Available' ? 'selected' : ''}>Available</option>
+                        <option value="IR" ${truck.status === 'In use' ? 'selected' : ''}>In use</option>
+                        <option value="IM" ${truck.status === 'In maintenance' ? 'selected' : ''}>In maintenance</option>
+                        <option value="OS" ${truck.status === 'Out of service' ? 'selected' : ''}>Out of service</option>
+                    </select>
+                </div>
+                <div class="truck-edit-actions">
+                    <button class="action-btn btn-save" onclick="saveTruck('${truck.id}')">Save</button>
+                    <button class="action-btn btn-cancel" onclick="cancelEdit('${truck.id}')">Cancel</button>
+                </div>
+            `;
+        } else {
+            // Modo visualización normal
             card.innerHTML = `
                 <div class="truck-header">
                     <div class="license-plate">${truck.licensePlate}</div>
@@ -118,6 +153,7 @@ function renderTrucks(trucksArray) {
                     <button class="action-btn btn-delete" onclick="deleteTruck('${truck.id}')">Delete</button>
                 </div>
             `;
+        }
         
         grid.appendChild(card);
     });
@@ -160,9 +196,63 @@ function applyFilter() {
 }
 
 window.editTruck = function(id) {
-    console.log('Edit truck ID:', id);
-    alert(`Edit truck ID: ${id}`);
-}
+    filteredTrucks = filteredTrucks.map(truck => {
+        if (truck.id === id) {
+            return {...truck, isEditing: true};
+        }
+        return truck;
+    });
+    renderTrucks(filteredTrucks);
+};
+
+window.cancelEdit = function(id) {
+    filteredTrucks = filteredTrucks.map(truck => {
+        if (truck.id === id) {
+            const originalTruck = allTrucks.find(t => t.id === id);
+            return {
+                ...originalTruck,
+                status: getStatusText(originalTruck.state?.id),
+                photo: getPhotoByBrand(originalTruck.brand),
+                isEditing: false
+            };
+        }
+        return truck;
+    });
+    renderTrucks(filteredTrucks);
+};
+
+window.saveTruck = async function(id) {
+    try {
+        showLoading();
+        console.log(id)
+        
+        const brand = document.getElementById(`edit-brand-${id}`).value;
+        const model = document.getElementById(`edit-model-${id}`).value;
+        const licensePlate = document.getElementById(`edit-license-${id}`).value;
+        const idStateTruck = document.getElementById(`edit-status-${id}`).value;
+        
+        const updatedData = {
+            id: id,
+            brand: brand,
+            model: model,
+            licensePlate: licensePlate,
+            idStateTruck: idStateTruck
+        };
+
+        const updatedTruck = await updateTruck(updatedData);
+        console.log('Truck updated:', updatedTruck);
+        
+        // Actualizar la lista
+        await loadTrucks();
+        
+        alert('Truck updated successfully');
+    } catch (error) {
+        console.error('Error updating truck:', error);
+        alert('Error updating truck. Please try again.');
+    } finally {
+        hideLoading();
+    }
+};
 
 window.deleteTruck = async function(id) {
     if (confirm('¿Are you sure that you want to delete this truck? This will change the state to "Out of service".')) {

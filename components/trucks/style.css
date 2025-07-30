@@ -47,6 +47,40 @@
     box-shadow: 0 6px 20px rgba(0, 0, 128, 0.3);
 }
 
+/* Estilos para el modo edición */
+.edit-input {
+    width: 80%;
+    padding: 8px;
+    margin-bottom: 5px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.edit-select {
+    width: 90%;
+    padding: 8px;
+    margin-bottom: 5px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background-color: white;
+}
+
+.truck-edit-actions {
+    display: flex;
+    gap: 5px;
+    margin-top: 5px;
+}
+
+.btn-save {
+    background-color: #4CAF50;
+    color: white;
+}
+
+.btn-cancel {
+    background-color: #f44336;
+    color: white;
+}
+
 /* Stats Summary */
 .stats-summary {
     display: flex;
@@ -204,7 +238,7 @@
 
 .truck-header {
     text-align: center;
-    margin-bottom: 10px;
+    margin-bottom: 5px;
 }
 
 .license-plate {
@@ -243,7 +277,7 @@
 
 .truck-status {
     text-align: center;
-    margin-top: 10px;
+    margin-top: 5px;
 }
 
 .status-badge {

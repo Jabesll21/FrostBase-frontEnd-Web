@@ -50,7 +50,7 @@ function validateForm() {
     const formData = new FormData(form);
     
     // Check required fields
-    const requiredFields = ['brand', 'model', 'license_plate', 'state'];
+    const requiredFields = ['brand', 'model', 'license_plate'];
     
     for (const field of requiredFields) {
         if (!formData.get(field)) {
@@ -89,7 +89,7 @@ async function handleFormSubmit(e) {
         
         const response = await createTruck(formData);
         
-        if (response.Status === 1) {
+        if (response.status === 0) {
             showSuccessMessage();
         } else {
             throw new Error('Failed to create truck');
@@ -112,8 +112,7 @@ function collectFormData() {
     const truckData = {
         Brand: formData.get('brand'),
         Model: formData.get('model'),
-        LicensePlate: formData.get('license_plate'),
-        State: formData.get('state') === 'true' 
+        LicensePlate: formData.get('license_plate')
     };
     
     return truckData;

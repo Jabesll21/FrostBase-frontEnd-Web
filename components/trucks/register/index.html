@@ -43,7 +43,16 @@
                         <input type="text" id="license_plate" name="license_plate" class="form-input" 
                                placeholder="e.g., ABC-123-D" required maxlength="9" minlength="9">
                     </div>
-                    <input type="hidden" id="state" name="state" value="AV"> 
+                    
+                    <div class="form-group">
+                        <label for="state" class="form-label">Status</label>
+                        <select id="state" name="state" class="form-input">
+                            <option value="AV">Available</option>
+                            <option value="IR">In use</option>
+                            <option value="IM">In maintenance</option>
+                            <option value="OS">Out of service</option>
+                        </select>
+                    </div>
                 </div>
             </div>
 
@@ -66,4 +75,3 @@
         </div>
     </div>
 </div>
-

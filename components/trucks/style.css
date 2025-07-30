@@ -47,40 +47,6 @@
     box-shadow: 0 6px 20px rgba(0, 0, 128, 0.3);
 }
 
-/* Estilos para el modo edición */
-.edit-input {
-    width: 80%;
-    padding: 8px;
-    margin-bottom: 5px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-}
-
-.edit-select {
-    width: 90%;
-    padding: 8px;
-    margin-bottom: 5px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    background-color: white;
-}
-
-.truck-edit-actions {
-    display: flex;
-    gap: 5px;
-    margin-top: 5px;
-}
-
-.btn-save {
-    background-color: #4CAF50;
-    color: white;
-}
-
-.btn-cancel {
-    background-color: #f44336;
-    color: white;
-}
-
 /* Stats Summary */
 .stats-summary {
     display: flex;
@@ -294,7 +260,7 @@
     color: #dc2626;
 }
 
-.status-badge.out-of {
+.status-badge.out-of-service {
     background: #d3d3d3;
     color: #464646;
 }
@@ -323,13 +289,17 @@
 
 .action-btn {
     flex: 1;
-    padding: 4px 8px;
+    padding: 6px 12px;
     border: none;
     border-radius: 6px;
     cursor: pointer;
     font-weight: 500;
     font-size: 11px;
     transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
 }
 
 .btn-edit {

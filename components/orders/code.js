@@ -132,9 +132,7 @@ function createOrderCard(order) {
                 </div>
             </div>
             <div class="order-actions">
-                <button class="btn-action btn-view" onclick="viewOrder('${orderId}')">
-                    <i class="fas fa-eye"></i> View
-                </button>
+                
                 <button class="btn-action btn-edit" onclick="editOrder('${orderId}')">
                     <i class="fas fa-edit"></i> Edit
                 </button>

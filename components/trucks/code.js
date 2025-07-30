@@ -1,4 +1,4 @@
-import { getTrucks, deleteTruck, updateTruck } from './services.js';
+import { getTrucks, deleteTruck } from './services.js';
 
 let allTrucks = [];
 let filteredTrucks = [];
@@ -23,7 +23,8 @@ async function loadTrucks() {
             model: truck.model || 'Unknown',
             status: getStatusText(truck.state?.id),
             licensePlate: truck.licensePlate || 'N/A',
-            photo: getPhotoByBrand(truck.brand)
+            photo: getPhotoByBrand(truck.brand),
+            rawTruck: truck 
         }));
         
         filteredTrucks = [...mappedTrucks];
@@ -102,58 +103,23 @@ function renderTrucks(trucksArray) {
         
         const statusClass = truck.status.toLowerCase().replace(' ', '-');
         
-        if (truck.isEditing) {
-            // Modo edición
-            card.innerHTML = `
-                <div class="truck-header">
-                    <input type="text" class="edit-input" value="${truck.licensePlate}" placeholder="License Plate" id="edit-license-${truck.id}">
-                    <input type="text" class="edit-input" value="${truck.model}" placeholder="Model" id="edit-model-${truck.id}">
-                </div>
-                <div class="truck-status">
-                    <select class="edit-select" id="edit-brand-${truck.id}">
-                        <option value="Volvo" ${truck.brand === 'Volvo' ? 'selected' : ''}>Volvo</option>
-                        <option value="Mercedes" ${truck.brand === 'Mercedes' ? 'selected' : ''}>Mercedes</option>
-                        <option value="Scania" ${truck.brand === 'Scania' ? 'selected' : ''}>Scania</option>
-                        <option value="Peterbilt" ${truck.brand === 'Peterbilt' ? 'selected' : ''}>Peterbilt</option>
-                        <option value="Mack" ${truck.brand === 'Mack' ? 'selected' : ''}>Mack</option>
-                        <option value="Kenworth" ${truck.brand === 'Kenworth' ? 'selected' : ''}>Kenworth</option>
-                        <option value="International" ${truck.brand === 'International' ? 'selected' : ''}>International</option>
-                        <option value="Freightliner" ${truck.brand === 'Freightliner' ? 'selected' : ''}>Freightliner</option>
-                    </select>
-                </div>
-                <div class="truck-status">
-                    <select class="edit-select" id="edit-status-${truck.id}">
-                        <option value="AV" ${truck.status === 'Available' ? 'selected' : ''}>Available</option>
-                        <option value="IR" ${truck.status === 'In use' ? 'selected' : ''}>In use</option>
-                        <option value="IM" ${truck.status === 'In maintenance' ? 'selected' : ''}>In maintenance</option>
-                        <option value="OS" ${truck.status === 'Out of service' ? 'selected' : ''}>Out of service</option>
-                    </select>
-                </div>
-                <div class="truck-edit-actions">
-                    <button class="action-btn btn-save" onclick="saveTruck('${truck.id}')">Save</button>
-                    <button class="action-btn btn-cancel" onclick="cancelEdit('${truck.id}')">Cancel</button>
-                </div>
-            `;
-        } else {
-            // Modo visualización normal
-            card.innerHTML = `
-                <div class="truck-header">
-                    <div class="license-plate">${truck.licensePlate}</div>
-                    <div class="truck-model">${truck.brand} ${truck.model}</div>
-                </div>
-                <div class="truck-image">
-                    <img src="components/trucks/photos/${truck.photo}" alt="${truck.brand} ${truck.model}" 
-                         onerror="this.src='components/trucks/photos/default.png'">
-                </div>
-                <div class="truck-status">
-                    <span class="status-badge ${statusClass}">${truck.status}</span>
-                </div>
-                <div class="truck-actions">
-                    <button class="action-btn btn-edit" onclick="editTruck('${truck.id}')">Edit</button>
-                    <button class="action-btn btn-delete" onclick="deleteTruck('${truck.id}')">Delete</button>
-                </div>
-            `;
-        }
+        card.innerHTML = `
+            <div class="truck-header">
+                <div class="license-plate">${truck.licensePlate}</div>
+                <div class="truck-model">${truck.brand} ${truck.model}</div>
+            </div>
+            <div class="truck-image">
+                <img src="components/trucks/photos/${truck.photo}" alt="${truck.brand} ${truck.model}" 
+                     onerror="this.src='components/trucks/photos/default.png'">
+            </div>
+            <div class="truck-status">
+                <span class="status-badge ${statusClass}">${truck.status}</span>
+            </div>
+            <div class="truck-actions">
+                <button class="action-btn btn-edit" onclick="editTruck('${truck.id}')">Edit</button>
+                <button class="action-btn btn-delete" onclick="deleteTruckConfirm('${truck.id}')">Delete</button>
+            </div>
+        `;
         
         grid.appendChild(card);
     });
@@ -169,7 +135,8 @@ function setupEventListeners() {
             model: truck.model || 'Unknown',
             status: getStatusText(truck.state?.id),
             licensePlate: truck.licensePlate || 'N/A',
-            photo: getPhotoByBrand(truck.brand)
+            photo: getPhotoByBrand(truck.brand),
+            rawTruck: truck
         })).filter(truck => 
             truck.licensePlate.toLowerCase().includes(searchTerm) ||
             truck.brand.toLowerCase().includes(searchTerm) ||
@@ -195,69 +162,27 @@ function applyFilter() {
     renderTrucks(filtered);
 }
 
+// Función global para editar truck
 window.editTruck = function(id) {
-    filteredTrucks = filteredTrucks.map(truck => {
-        if (truck.id === id) {
-            return {...truck, isEditing: true};
-        }
-        return truck;
-    });
-    renderTrucks(filteredTrucks);
-};
-
-window.cancelEdit = function(id) {
-    filteredTrucks = filteredTrucks.map(truck => {
-        if (truck.id === id) {
-            const originalTruck = allTrucks.find(t => t.id === id);
-            return {
-                ...originalTruck,
-                status: getStatusText(originalTruck.state?.id),
-                photo: getPhotoByBrand(originalTruck.brand),
-                isEditing: false
-            };
-        }
-        return truck;
-    });
-    renderTrucks(filteredTrucks);
-};
-
-window.saveTruck = async function(id) {
-    try {
-        showLoading();
-        console.log(id)
-        
-        const brand = document.getElementById(`edit-brand-${id}`).value;
-        const model = document.getElementById(`edit-model-${id}`).value;
-        const licensePlate = document.getElementById(`edit-license-${id}`).value;
-        const idStateTruck = document.getElementById(`edit-status-${id}`).value;
-        
-        const updatedData = {
-            id: id,
-            brand: brand,
-            model: model,
-            licensePlate: licensePlate,
-            idStateTruck: idStateTruck
-        };
-
-        const updatedTruck = await updateTruck(updatedData);
-        console.log('Truck updated:', updatedTruck);
-        
-        // Actualizar la lista
-        await loadTrucks();
-        
-        alert('Truck updated successfully');
-    } catch (error) {
-        console.error('Error updating truck:', error);
-        alert('Error updating truck. Please try again.');
-    } finally {
-        hideLoading();
+    console.log('Editing truck:', id);
+    
+    if (!id) {
+        showToast('Error: Truck ID not found', 'error');
+        return;
     }
+    
+    // Mostrar mensaje de carga
+    showToast('Loading truck data...', 'info');
+    
+    // Cargar el componente de registro en modo edición
+    loadComponent('components/trucks/register', { truckId: id });
 };
 
-window.deleteTruck = async function(id) {
+// Función global para eliminar truck
+window.deleteTruckConfirm = async function(id) {
     if (confirm('¿Are you sure that you want to delete this truck? This will change the state to "Out of service".')) {
         try {
-            showLoading();
+            showToast('Updating truck status...', 'info');
             const deletedTruck = await deleteTruck(id);
             console.log('Truck deleted:', deletedTruck);
             
@@ -265,34 +190,142 @@ window.deleteTruck = async function(id) {
             await loadTrucks();
             
             // Muestra un mensaje de éxito
-            alert('Changed state to "Out of service" successfully.');
+            showToast('Changed state to "Out of service" successfully.', 'success');
         } catch (error) {
             console.error('Error deleting truck:', error);
-            alert('Error trying to delete the truck. Try again later.');
-        } finally {
-            hideLoading();
+            showToast('Error trying to delete the truck. Try again later.', 'error');
         }
+    }
+};
+
+// Función para mostrar toast notifications
+function showToast(message, type = 'success') {
+    // Remover toasts existentes
+    const existingToasts = document.querySelectorAll('.toast');
+    existingToasts.forEach(toast => toast.remove());
+    
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    
+    const icon = getToastIcon(type);
+    
+    toast.innerHTML = `
+        <div class="toast-content">
+            <i class="fas fa-${icon}" style="margin-right: 8px;"></i>
+            <span>${message}</span>
+        </div>
+    `;
+    
+    toast.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: ${getToastColor(type)};
+        color: white;
+        padding: 12px 24px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        z-index: 1000;
+        font-weight: 500;
+        font-size: 14px;
+        max-width: 400px;
+        animation: slideInRight 0.3s ease-out;
+    `;
+    
+    document.body.appendChild(toast);
+    
+    // Auto remove
+    const duration = type === 'info' ? 2000 : 3000;
+    setTimeout(() => {
+        if (toast.parentNode) {
+            toast.style.animation = 'slideOutRight 0.3s ease-in';
+            setTimeout(() => toast.remove(), 300);
+        }
+    }, duration);
+}
+
+function getToastIcon(type) {
+    switch(type) {
+        case 'success': return 'check-circle';
+        case 'error': return 'exclamation-circle';
+        case 'info': return 'info-circle';
+        case 'warning': return 'exclamation-triangle';
+        default: return 'info-circle';
     }
 }
 
-export function loadComponent(component){
-    console.log(component);
+function getToastColor(type) {
+    switch(type) {
+        case 'success': return '#16a34a';
+        case 'error': return '#dc2626';
+        case 'info': return '#3b82f6';
+        case 'warning': return '#d97706';
+        default: return '#6b7280';
+    }
+}
+
+// Función para cargar componentes
+function loadComponent(component, params = {}) {
+    console.log('Loading component:', component, params);
     var url = component + '/index.html';
-    var urlCode = '../../' + component + '/code.js'
+    var urlCode = '../../' + component + '/code.js';
+    
     fetch(url)
         .then((response) => { return response.text(); })
-        .then( (html) => { loadHtml(html) } )
-        .then( () => { importModule(urlCode) })
-        .catch( (error) => {console.error('Invalid HTML file'); })
+        .then((html) => { loadHtml(html) })
+        .then(() => { importModule(urlCode, params) })
+        .catch((error) => { 
+            console.error('Invalid HTML file:', error);
+            showToast('Error loading page', 'error');
+        });
 }
 
+// Función para cargar HTML
 async function loadHtml(html) {
     console.log('Loading HTML...')
-    document.getElementById('content').innerHTML = html
+    document.getElementById('content').innerHTML = html;
 }
 
-async function importModule(moduleUrl) {
-    console.log('Importing Module ' + moduleUrl)
-    let { init } = await import(moduleUrl)
-    init()
+// Función para importar módulo
+async function importModule(moduleUrl, params = {}) {
+    console.log('Importing Module ' + moduleUrl);
+    try {
+        let { init } = await import(moduleUrl + '?v=' + Date.now());
+        init(params);
+    } catch (error) {
+        console.error('Error importing module:', error);
+        showToast('Error loading page', 'error');
+    }
 }
+
+// Agregar estilos para las animaciones de toast
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes slideInRight {
+        from {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+    
+    @keyframes slideOutRight {
+        from {
+            transform: translateX(0);
+            opacity: 1;
+        }
+        to {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+    }
+    
+    .toast-content {
+        display: flex;
+        align-items: center;
+    }
+`;
+document.head.appendChild(style);

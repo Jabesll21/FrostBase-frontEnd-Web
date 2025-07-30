@@ -1,4 +1,4 @@
-import { getStores } from "./services.js"
+import { getStores, deleteStore } from "./services.js"
 
 export function init(){
     console.log('Initializing stores...')
@@ -111,7 +111,7 @@ function createStoreCard(store) {
                 <button class="btn-action btn-edit" onclick="editStore('${store.id}')">
                     <i class="fas fa-edit"></i> Edit
                 </button>
-                <button class="btn-action btn-delete" onclick="deleteStore('${store.id}')">
+                <button class="btn-action btn-delete" onclick="confirmDeleteStore('${store.id}')">
                     <i class="fas fa-trash"></i> Delete
                 </button>
             </div>
@@ -163,7 +163,7 @@ function showEmptyState() {
 function viewStore(storeId) {
     const store = allStores.find(s => s.id === storeId);
     if (store) {
-        alert(`Store Details:\n\nName: ${store.name}\nPhone: ${store.phone || 'N/A'}\nAddress: ${store.location.address || 'N/A'}\nCoordinates: ${store.location.latitude}, ${store.location.longitude}`);
+        alert(`Store Details:\n\nName: ${store.name}\nPhone: ${store.phone || 'N/A'}\nAddress: ${store.location.address || 'N/A'}\nCoordinates: ${store.location.latitude}, ${store.location.longitude}\nStatus: ${store.active ? 'Active' : 'Inactive'}`);
     }
 }
 
@@ -172,20 +172,45 @@ function editStore(storeId) {
     loadComponent('components/stores/register', { storeId: storeId });
 }
 
-function deleteStore(storeId) {
+async function confirmDeleteStore(storeId) {
     const store = allStores.find(s => s.id === storeId);
     if (store && confirm(`Are you sure you want to delete "${store.name}"?`)) {
-        console.log('Deleting store:', storeId);
-        // Here you would implement the delete functionality
-        alert('Store deleted successfully (demo)');
-        loadStores(); // Reload the stores
+        try {
+            await deleteStore(storeId);
+            showToast('Store deleted successfully');
+            loadStores(); // Reload the stores
+        } catch (error) {
+            console.error('Error deleting store:', error);
+            alert('Error deleting store: ' + error.message);
+        }
     }
+}
+
+function showToast(message, type = 'success') {
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    toast.textContent = message;
+    toast.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: ${type === 'success' ? '#16a34a' : '#dc2626'};
+        color: white;
+        padding: 12px 24px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        z-index: 1000;
+        font-weight: 500;
+    `;
+    
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 3000);
 }
 
 // Make functions global for onclick handlers
 window.viewStore = viewStore;
 window.editStore = editStore;
-window.deleteStore = deleteStore;
+window.confirmDeleteStore = confirmDeleteStore;
 
 // Function to load components (should be available globally)
 function loadComponent(component, params = {}) {

@@ -1,0 +1,76 @@
+<link href="components/stores/register/style.css" rel="stylesheet">
+
+<div class="register-store-container">
+    <div class="header">
+        <h1 class="title">Add New Store</h1>
+        <button class="back-button" id="back-button">
+            ← Back to Stores
+        </button>
+    </div>
+
+    <div class="form-container">
+        <form id="store-form" class="store-form">
+            
+            <div class="form-section">
+                <h2 class="section-title">Store Information</h2>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="name" class="form-label">Store Name</label>
+                        <input type="text" id="name" name="name" class="form-input" 
+                               placeholder="e.g., SuperMart Downtown" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="phone" class="form-label">Phone Number</label>
+                        <input type="tel" id="phone" name="phone" class="form-input" 
+                               placeholder="e.g., +52 664 123 4567" required>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h2 class="section-title">Location Details</h2>
+                
+                <div class="form-row">
+                    <div class="form-group full-width">
+                        <label for="address" class="form-label">Full Address</label>
+                        <textarea id="address" name="address" class="form-textarea" 
+                                  placeholder="e.g., Av. Revolución 1234, Zona Centro, Tijuana, B.C., México" required></textarea>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="latitude" class="form-label">Latitude</label>
+                        <input type="number" id="latitude" name="latitude" class="form-input" 
+                               step="any" placeholder="e.g., 32.5027" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="longitude" class="form-label">Longitude</label>
+                        <input type="number" id="longitude" name="longitude" class="form-input" 
+                               step="any" placeholder="e.g., -117.0382" required>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button type="button" class="btn-cancel" id="cancel-button">Cancel</button>
+                <button type="submit" class="btn-save" id="save-button">
+                    <span class="btn-text">Save Store</span>
+                    <span class="btn-loading" style="display: none;">Saving...</span>
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <div class="success-message" id="success-message" style="display: none;">
+        <div class="success-content">
+            <div class="success-icon">✓</div>
+            <h3>Store Added Successfully!</h3>
+            <p>The store has been registered and added to your network.</p>
+            <button class="btn-continue" id="continue-button">Continue</button>
+        </div>
+    </div>
+</div>

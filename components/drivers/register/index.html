@@ -37,14 +37,18 @@
                 <div class="form-row">
                     <div class="form-group">
                         <label for="email" class="form-label">Email Address</label>
-                        <input type="email" id="email" name="email" class="form-input"  autocomplete="off"
+                        <input type="email" id="email" name="email" class="form-input" autocomplete="off"
                                placeholder="e.g., juan.perez@frost.com" required>
                     </div>
                     
                     <div class="form-group">
                         <label for="password" class="form-label">Password</label>
-                        <input type="password" id="password" name="password" class="form-input" autocomplete="off" minlength="8" maxlength="20"
+                        <input type="password" id="password" name="password" class="form-input" 
+                               autocomplete="off" minlength="8" maxlength="20"
                                placeholder="********" required>
+                        <small class="form-help" id="password-help" style="display: none; color: #6b7280; font-style: italic;">
+                            Leave blank to keep current password
+                        </small>
                     </div>
                 </div>
 

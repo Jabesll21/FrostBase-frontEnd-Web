@@ -1,13 +1,25 @@
-import { createUser } from '../services.js';
+import { createUser, getDriverById, updateDriver } from '../services.js';
+
+let currentDriverId = null;
+let isEditMode = false;
 
 export function init(params = {}) {
-    console.log('Initializing add driver interface...');
-    setupEventListeners();
+    console.log('Initializing driver interface...', params);
     
+    // Verificar si estamos en modo edición
     if (params.driverId) {
-        loadDriverData(params.driverId);
+        currentDriverId = params.driverId;
+        isEditMode = true;
         document.querySelector('.title').textContent = 'Edit Driver';
+        document.querySelector('.btn-save').textContent = 'Update Driver';
+        loadDriverData(params.driverId);
+    } else {
+        isEditMode = false;
+        document.querySelector('.title').textContent = 'Add New Driver';
+        document.querySelector('.btn-save').textContent = 'Save Driver';
     }
+    
+    setupEventListeners();
 }
 
 function setupEventListeners() {
@@ -53,26 +65,86 @@ function setupEventListeners() {
     if (emailInput) {
         emailInput.addEventListener('blur', validateEmail);
     }
-
 }
 
 async function loadDriverData(driverId) {
     console.log('Loading driver data for ID:', driverId);
     try {
-        const drivers = await getDrivers();
-        const driver = drivers.find(d => d.id === driverId);
+        showLoadingForm();
+        const driver = await getDriverById(driverId);
         
         if (driver) {
+            console.log('Driver data loaded:', driver);
+            
             // Llenar el formulario con los datos del conductor
-            document.getElementById('firstName').value = driver.name.firstName || '';
-            document.getElementById('lastName').value = driver.name.lastName || '';
+            document.getElementById('firstName').value = driver.name?.firstName || driver.firstName || '';
+            document.getElementById('lastName').value = driver.name?.lastName || driver.lastName || '';
+            document.getElementById('middleName').value = driver.name?.middleName || driver.middleName || '';
             document.getElementById('email').value = driver.email || '';
             document.getElementById('phone').value = driver.phone || '';
+            
+            // Para la fecha de nacimiento, manejar DateOnly del backend
+            if (driver.birthDate) {
+                let birthDateString;
+                if (typeof driver.birthDate === 'string') {
+                    // Si ya es string, usar tal como está
+                    birthDateString = driver.birthDate.split('T')[0]; // Solo la parte de fecha
+                } else {
+                    // Si es objeto Date
+                    const birthDate = new Date(driver.birthDate);
+                    birthDateString = birthDate.toISOString().split('T')[0];
+                }
+                document.getElementById('birth').value = birthDateString;
+            }
+            
+            // En modo edición, hacer el password opcional
+            const passwordField = document.getElementById('password');
+            if (passwordField) {
+                passwordField.required = false;
+                passwordField.placeholder = 'Enter new password (leave blank to keep current)';
+                
+                // Mostrar el texto de ayuda
+                const helpText = document.getElementById('password-help');
+                if (helpText) {
+                    helpText.style.display = 'block';
+                }
+            }
+            
+            hideLoadingForm();
+        } else {
+            throw new Error('Driver not found');
         }
     } catch (error) {
         console.error('Error loading driver data:', error);
-        showAlert('Error loading driver data. Please try again.');
+        hideLoadingForm();
+        showAlert('Error loading driver data: ' + error.message);
+        loadComponent('components/drivers');
     }
+}
+
+function showLoadingForm() {
+    const form = document.getElementById('driver-form');
+    const loadingDiv = document.createElement('div');
+    loadingDiv.id = 'form-loading';
+    loadingDiv.innerHTML = `
+        <div style="text-align: center; padding: 50px; color: #6b7280;">
+            <div style="display: inline-block; width: 40px; height: 40px; border: 4px solid #E5E7EB; border-top: 4px solid #000080; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+            <p style="margin-top: 20px;">Loading driver data...</p>
+        </div>
+    `;
+    
+    if (form) {
+        form.style.display = 'none';
+        form.parentNode.appendChild(loadingDiv);
+    }
+}
+
+function hideLoadingForm() {
+    const form = document.getElementById('driver-form');
+    const loadingDiv = document.getElementById('form-loading');
+    
+    if (form) form.style.display = 'block';
+    if (loadingDiv) loadingDiv.remove();
 }
 
 function validateEmail() {
@@ -94,13 +166,19 @@ function validateForm() {
     const formData = new FormData(form);
     let isValid = true;
     
-    const requiredFields = [
-        'firstName', 'lastName', 'email', 'phone'
-    ];
+    // Campos requeridos básicos incluyendo fecha de nacimiento
+    const requiredFields = ['firstName', 'lastName', 'email', 'phone', 'birth'];
+    
+    // En modo creación, password es requerido
+    if (!isEditMode) {
+        requiredFields.push('password');
+    }
     
     requiredFields.forEach(field => {
         const input = document.getElementById(field);
-        if (!formData.get(field) || formData.get(field).trim() === '') {
+        const value = formData.get(field);
+        
+        if (!value || value.trim() === '') {
             showFieldError(input, 'This field is required');
             isValid = false;
         } else {
@@ -108,8 +186,34 @@ function validateForm() {
         }
     });
 
+    // Validar email siempre
     if (!validateEmail()) {
         isValid = false;
+    }
+
+    if (isEditMode) {
+        const password = formData.get('password');
+        if (password && password.length < 8) {
+            showFieldError(document.getElementById('password'), 'Password must be at least 8 characters long');
+            isValid = false;
+        }
+    }
+
+    const birthDate = formData.get('birth');
+    if (birthDate) {
+        const dateValue = new Date(birthDate);
+        const today = new Date();
+        const minDate = new Date('1900-01-01');
+        
+        if (dateValue > today) {
+            showFieldError(document.getElementById('birth'), 'Birth date cannot be in the future');
+            isValid = false;
+        } else if (dateValue < minDate) {
+            showFieldError(document.getElementById('birth'), 'Please enter a valid birth date');
+            isValid = false;
+        } else {
+            hideFieldError(document.getElementById('birth'));
+        }
     }
 
     return isValid;
@@ -154,41 +258,101 @@ function handleFormSubmit(e) {
     }
 
     const saveButton = document.querySelector('.btn-save');
+    const originalText = saveButton.textContent;
     saveButton.classList.add('loading');
     saveButton.disabled = true;
+    saveButton.textContent = isEditMode ? 'Updating...' : 'Saving...';
 
     const formData = new FormData(e.target);
     
-    const userData = {
-        name: formData.get('firstName'),           
-        lastName: formData.get('lastName'),        
-        middleName: formData.get('middleName') || '', 
-        email: formData.get('email'),              
-        phone: formData.get('phone'),             
-        birthDate: new Date(formData.get('birth') || '1990-01-01'), 
-        password: formData.get('password') || 'defaultPassword123', 
-        isAdmin: false 
-    };
-
-    console.log('Sending user data:', userData);
-
-    createUser(userData)
-        .then(result => {
-            console.log('User created successfully:', result);
-            showSuccessMessage();
-        })
-        .catch(error => {
-            console.error('Error creating user:', error);
-            showAlert('Error creating driver. Please try again.');
-        })
-        .finally(() => {
+    if (isEditMode) {
+        const birthDateValue = formData.get('birth');
+        
+        if (!birthDateValue) {
+            showFieldError(document.getElementById('birth'), 'Birth date is required');
             saveButton.classList.remove('loading');
             saveButton.disabled = false;
+            saveButton.textContent = originalText;
+            return;
+        }
+        
+        const updateData = {
+            id: currentDriverId,
+            name: {
+                firstName: formData.get('firstName').trim(),
+                lastName: formData.get('lastName').trim(),
+                middleName: formData.get('middleName')?.trim() || ""
+            },
+            email: formData.get('email').trim(),
+            phone: formData.get('phone').trim(),
+            birthDate: birthDateValue // Formato "YYYY-MM-DD" como string
+        };
+
+        console.log('Final update data (matching Swagger):', JSON.stringify(updateData, null, 2));
+        console.log('Data types:', {
+            id: typeof updateData.id,
+            firstName: typeof updateData.name.firstName,
+            lastName: typeof updateData.name.lastName,
+            middleName: typeof updateData.name.middleName,
+            email: typeof updateData.email,
+            phone: typeof updateData.phone,
+            birthDate: typeof updateData.birthDate
         });
+
+        updateDriver(currentDriverId, updateData)
+            .then(result => {
+                console.log('Driver updated successfully:', result);
+                showSuccessMessage('Driver Updated Successfully!', 'The driver information has been updated.');
+            })
+            .catch(error => {
+                console.error('Error updating driver:', error);
+                showAlert('Error updating driver: ' + error.message);
+            })
+            .finally(() => {
+                saveButton.classList.remove('loading');
+                saveButton.disabled = false;
+                saveButton.textContent = originalText;
+            });
+    } else {
+        // Modo creación
+        const userData = {
+            name: formData.get('firstName'),
+            lastName: formData.get('lastName'),
+            middleName: formData.get('middleName') || '',
+            email: formData.get('email'),
+            phone: formData.get('phone'),
+            birthDate: formData.get('birth') ? new Date(formData.get('birth')) : new Date('1990-01-01'),
+            password: formData.get('password'),
+            isAdmin: false
+        };
+
+        console.log('Creating driver with data:', userData);
+
+        createUser(userData)
+            .then(result => {
+                console.log('Driver created successfully:', result);
+                showSuccessMessage('Driver Added Successfully!', 'The new driver has been registered in the system.');
+            })
+            .catch(error => {
+                console.error('Error creating driver:', error);
+                showAlert('Error creating driver: ' + error.message);
+            })
+            .finally(() => {
+                saveButton.classList.remove('loading');
+                saveButton.disabled = false;
+                saveButton.textContent = originalText;
+            });
+    }
 }
 
-function showSuccessMessage() {
+function showSuccessMessage(title = 'Success!', message = 'Operation completed successfully.') {
     const successMessage = document.getElementById('success-message');
+    const titleElement = successMessage.querySelector('h3');
+    const messageElement = successMessage.querySelector('p');
+    
+    if (titleElement) titleElement.textContent = title;
+    if (messageElement) messageElement.textContent = message;
+    
     if (successMessage) {
         successMessage.style.display = 'flex';
     }
@@ -214,7 +378,10 @@ function loadComponent(component, params = {}) {
         .then((response) => { return response.text(); })
         .then((html) => { loadHtml(html) })
         .then(() => { importModule(urlCode, params) })
-        .catch((error) => { console.error('Invalid HTML file:', error); });
+        .catch((error) => { 
+            console.error('Invalid HTML file:', error);
+            showAlert('Error loading page. Please try again.');
+        });
 }
 
 async function loadHtml(html) {

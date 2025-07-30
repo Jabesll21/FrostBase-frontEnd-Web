@@ -34,23 +34,6 @@ function setupEventListeners() {
         loadComponent('components/drivers');
     });
 
-    // Real-time license plate formatting
-    const licensePlateInput = document.getElementById('licensePlate');
-    if (licensePlateInput) {
-        licensePlateInput.addEventListener('input', (e) => {
-            let value = e.target.value.toUpperCase();
-            value = value.replace(/[^A-Z0-9-]/g, '');
-            
-            if (value.length <= 3) {
-                e.target.value = value;
-            } else if (value.length <= 6) {
-                e.target.value = value.slice(0, 3) + '-' + value.slice(3);
-            } else {
-                e.target.value = value.slice(0, 3) + '-' + value.slice(3, 6) + '-' + value.slice(6, 7);
-            }
-        });
-    }
-
     // Phone number formatting
     const phoneInput = document.getElementById('phone');
     if (phoneInput) {
@@ -71,26 +54,6 @@ function setupEventListeners() {
         emailInput.addEventListener('blur', validateEmail);
     }
 
-    // Set minimum dates
-    setMinimumDates();
-}
-
-function setMinimumDates() {
-    const today = new Date().toISOString().split('T')[0];
-    const oneYearFromNow = new Date();
-    oneYearFromNow.setFullYear(oneYearFromNow.getFullYear() + 1);
-    
-    // License expiry should be at least one year from now
-    const licenseExpiryInput = document.getElementById('licenseExpiry');
-    if (licenseExpiryInput) {
-        licenseExpiryInput.min = oneYearFromNow.toISOString().split('T')[0];
-    }
-    
-    // Hire date can be today or in the future
-    const hireDateInput = document.getElementById('hireDate');
-    if (hireDateInput) {
-        hireDateInput.max = today;
-    }
 }
 
 async function loadDriverData(driverId) {
@@ -202,7 +165,7 @@ function handleFormSubmit(e) {
         middleName: formData.get('middleName') || '', 
         email: formData.get('email'),              
         phone: formData.get('phone'),             
-        birthDate: new Date(formData.get('birthDate') || '1990-01-01'), 
+        birthDate: new Date(formData.get('birth') || '1990-01-01'), 
         password: formData.get('password') || 'defaultPassword123', 
         isAdmin: false 
     };

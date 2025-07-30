@@ -12,7 +12,7 @@ function init() {
         toggleSideMenu();
     })
     showSideMenu(); //show side menu
-    loadComponent('components\\trucks'); //show component at start
+    loadComponent('components\\drivers'); //show component at start
 }
 
 //toggle side menu

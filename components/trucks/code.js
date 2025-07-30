@@ -70,12 +70,16 @@ function showError() {
 
 function updateStats() {
     const total = allTrucks.length;
-    const inUse = allTrucks.filter(truck => truck.state?.id === 'IR').length;
     const available = allTrucks.filter(truck => truck.state?.id === 'AV').length;
+    const inUse = allTrucks.filter(truck => truck.state?.id === 'IR').length;
+    const inMaintenance = allTrucks.filter(truck => truck.state?.id === 'IM').length;
+    const outOfService = allTrucks.filter(truck => truck.state?.id === 'OS').length;
 
     document.getElementById('total-trucks').textContent = total;
-    document.getElementById('in-use-trucks').textContent = inUse;
     document.getElementById('available-trucks').textContent = available;
+    document.getElementById('in-use-trucks').textContent = inUse;
+    document.getElementById('in-maintenance-trucks').textContent = inMaintenance;
+    document.getElementById('out-of-service-trucks').textContent = outOfService;
 }
 
 function renderTrucks(trucksArray) {
@@ -136,16 +140,6 @@ function setupEventListeners() {
             truck.model.toLowerCase().includes(searchTerm)
         );
         applyFilter();
-    });
-
-    const filterButtons = document.querySelectorAll('.filter-btn');
-    filterButtons.forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            filterButtons.forEach(b => b.classList.remove('active'));
-            e.target.classList.add('active');
-            currentFilter = e.target.dataset.filter;
-            applyFilter();
-        });
     });
 
     document.getElementById('add-button').addEventListener('click', () => {

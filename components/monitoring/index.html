@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<link href="components/monitoring/style.css" rel="stylesheet">
+
+<div class="monitoring-container">
+    <!-- Header -->
+    <div class="header">
+        <div class="h1">
+            <h1>Temperature & Humidity Monitoring</h1>
+        </div>
+        <div class="controls">
+            <button id="refresh-button" class="refresh-button">
+                <i class="fas fa-sync"></i> Refresh
+            </button>
+            
+        </div>
+    </div>
+
+    <!-- KPI Cards -->
+    <div class="kpi-section">
+        <div class="kpi-card temperature">
+            <div class="kpi-header">
+                <i class="fas fa-thermometer-half"></i>
+                <h3>Temperature Status</h3>
+            </div>
+            <div class="kpi-content">
+                <div class="kpi-main">
+                    <span class="kpi-value" id="temp-avg">--°C</span>
+                    <span class="kpi-label">Average</span>
+                </div>
+                <div class="kpi-stats">
+                    <div class="stat-item">
+                        <span class="stat-label">In Range</span>
+                        <span class="stat-value good" id="temp-in-range">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Out of Range</span>
+                        <span class="stat-value bad" id="temp-out-range">0</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="kpi-card humidity">
+            <div class="kpi-header">
+                <i class="fas fa-tint"></i>
+                <h3>Humidity Status</h3>
+            </div>
+            <div class="kpi-content">
+                <div class="kpi-main">
+                    <span class="kpi-value" id="humidity-avg">--%</span>
+                    <span class="kpi-label">Average</span>
+                </div>
+                <div class="kpi-stats">
+                    <div class="stat-item">
+                        <span class="stat-label">In Range</span>
+                        <span class="stat-value good" id="humidity-in-range">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Out of Range</span>
+                        <span class="stat-value bad" id="humidity-out-range">0</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="kpi-card alerts">
+            <div class="kpi-header">
+                <i class="fas fa-exclamation-triangle"></i>
+                <h3>Active Alerts</h3>
+            </div>
+            <div class="kpi-content">
+                <div class="kpi-main">
+                    <span class="kpi-value" id="active-alerts">0</span>
+                    <span class="kpi-label">Critical Issues</span>
+                </div>
+                <div class="kpi-stats">
+                    <div class="stat-item">
+                        <span class="stat-label">Temperature</span>
+                        <span class="stat-value warning" id="temp-alerts">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Humidity</span>
+                        <span class="stat-value warning" id="humidity-alerts">0</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters Section -->
+    <div class="filters-section">
+        <div class="filter-group">
+            <label for="date-range">Date Range:</label>
+            <select id="date-range" class="filter-select">
+                <option value="today">Today</option>
+                <option value="week">Last 7 days</option>
+                <option value="month">Last 30 days</option>
+                <option value="custom">Custom Range</option>
+            </select>
+        </div>
+        
+        <div class="filter-group" id="custom-dates" style="display: none;">
+            <label for="start-date">From:</label>
+            <input type="date" id="start-date" class="filter-input">
+            <label for="end-date">To:</label>
+            <input type="date" id="end-date" class="filter-input">
+        </div>
+
+        <div class="filter-group">
+            <label for="truck-filter">Truck:</label>
+            <select id="truck-filter" class="filter-select">
+                <option value="all">All Trucks</option>
+            </select>
+        </div>
+
+        <button id="apply-filters" class="apply-button">Apply Filters</button>
+    </div>
+
+    <!-- Charts Section -->
+    <div class="charts-section">
+        <div class="chart-container">
+            <div class="chart-header">
+                <h3>Temperature Trends</h3>
+                <div class="chart-controls">
+                    <button class="chart-btn active" data-chart="temp" data-view="trend">Trend</button>
+                    <button class="chart-btn" data-chart="temp" data-view="distribution">Distribution</button>
+                    <button class="chart-btn" data-chart="temp" data-view="alerts">Alerts</button>
+                </div>
+            </div>
+            <div id="temperature-chart" class="chart"></div>
+        </div>
+
+        <div class="chart-container">
+            <div class="chart-header">
+                <h3>Humidity Trends</h3>
+                <div class="chart-controls">
+                    <button class="chart-btn active" data-chart="humidity" data-view="trend">Trend</button>
+                    <button class="chart-btn" data-chart="humidity" data-view="distribution">Distribution</button>
+                    <button class="chart-btn" data-chart="humidity" data-view="alerts">Alerts</button>
+                </div>
+            </div>
+            <div id="humidity-chart" class="chart"></div>
+        </div>
+    </div>
+
+    <!-- Data Table Section -->
+    <div class="table-section">
+        <div class="table-header">
+            <h3>Detailed Readings</h3>
+            <div class="table-controls">
+                <input type="text" id="search-input" placeholder="Search readings..." class="search-input">
+                <select id="status-filter" class="filter-select">
+                    <option value="all">All Status</option>
+                    <option value="normal">Normal</option>
+                    <option value="warning">Warning</option>
+                    <option value="critical">Critical</option>
+                </select>
+            </div>
+        </div>
+        
+        <div class="table-container">
+            <table id="readings-table" class="data-table">
+                <thead>
+                    <tr>
+                        <th>Timestamp</th>
+                        <th>Truck</th>
+                        <th>Temperature (°C)</th>
+                        <th>Humidity (%)</th>
+                        <th>Status</th>
+                        <th>Location</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="readings-tbody">
+                    <!-- Data will be populated here -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="loading-overlay" style="display: none;">
+        <div class="loading-content">
+            <div class="spinner"></div>
+            <p>Loading monitoring data...</p>
+        </div>
+    </div>
+</div>

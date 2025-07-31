@@ -1,55 +1,43 @@
 {
     "options": [
         {
-            "id": 1001,
-            "text": "Home",
-            "icon": "home",
-            "component": "components/home"
-        },
-        {
-            "id": 1002,
-            "text": "Dashboard",
-            "icon": "chart-bar",
-            "component": "components/dashboard"
-        },
-        {
             "id": 1003,
+            "text": "Monitoring",
+            "icon": "thermometer-half",
+            "component": "components/monitoring"
+        },
+        {
+            "id": 1004,
             "text": "Drivers",
             "icon": "users",
             "component": "components/drivers"
         },
         {
-            "id": 1004,
+            "id": 1005,
             "text": "Trucks",
             "icon": "truck",
             "component": "components/trucks"
         },
         {
-            "id": 1005,
+            "id": 1006,
             "text": "Stores",
             "icon": "store",
             "component": "components/stores"
         },
         {
-            "id": 1006,
+            "id": 1007,
             "text": "Orders",
             "icon": "shopping-bag",
             "component": "components/orders"
         },
         {
-            "id": 1007,
+            "id": 1008,
             "text": "Map",
             "icon": "map",
             "component": "components/map"
         },
         {
-            "id": 1008,
-            "text": "Settings",
-            "icon": "cog",
-            "component": "components/settings"
-        },
-        {
-            "id": 1009,
+            "id": 1010,
             "text": "Log out",
             "icon": "door-open",
             "component": "components/logout"

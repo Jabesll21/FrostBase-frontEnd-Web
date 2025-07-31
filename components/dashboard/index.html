@@ -1,95 +1,187 @@
-<link href="components/dashboard/style.css" rel="stylesheet">
-<div class="h1"><h1>Dashboard</h1></div>
-<br>
-<div class="kpi">
-    <div class="kpi-top">
-        <div class="kpi-icon">
-            <i class="fas fa-pause"></i>
+<link href="components/performance/style.css" rel="stylesheet">
+
+<div class="performance-container">
+    <!-- Header -->
+    <div class="header">
+        <div class="h1">
+            <h1>Performance Dashboard</h1>
         </div>
-        <div class="kpi-value">
-            <label id="label-backlog">999</label>
+        <div class="controls">
+            <div class="date-filter">
+                <label for="date-range">Date Range:</label>
+                <select id="date-range" class="filter-select">
+                    <option value="today">Today</option>
+                    <option value="yesterday">Yesterday</option>
+                    <option value="week" selected>Last 7 days</option>
+                    <option value="month">Last 30 days</option>
+                    <option value="custom">Custom Range</option>
+                </select>
+            </div>
+            <div class="truck-filter">
+                <label for="truck-filter">Truck:</label>
+                <select id="truck-filter" class="filter-select">
+                    <option value="all">All Trucks</option>
+                </select>
+            </div>
+            <button id="refresh-button" class="refresh-button">
+                <i class="fas fa-sync-alt"></i> Refresh
+            </button>
         </div>
     </div>
-    <div class="kpi-bottom">
-        <label>Orders backlog</label>
+
+    <!-- Custom Date Range (Hidden by default) -->
+    <div id="custom-date-range" class="custom-date-range" style="display: none;">
+        <div class="date-inputs">
+            <div class="date-group">
+                <label for="start-date">From:</label>
+                <input type="date" id="start-date" class="date-input">
+            </div>
+            <div class="date-group">
+                <label for="end-date">To:</label>
+                <input type="date" id="end-date" class="date-input">
+            </div>
+            <button id="apply-custom-range" class="apply-button">Apply</button>
+        </div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="summary-cards">
+        <div class="summary-card temperature">
+            <div class="card-header">
+                <i class="fas fa-thermometer-half"></i>
+                <h3>Temperature Performance</h3>
+            </div>
+            <div class="card-content">
+                <div class="metric">
+                    <span class="metric-value" id="temp-compliance">0%</span>
+                    <span class="metric-label">Compliance Rate</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value" id="temp-violations">0</span>
+                    <span class="metric-label">Violations</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value" id="temp-avg">0°C</span>
+                    <span class="metric-label">Average Temp</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="summary-card humidity">
+            <div class="card-header">
+                <i class="fas fa-tint"></i>
+                <h3>Humidity Performance</h3>
+            </div>
+            <div class="card-content">
+                <div class="metric">
+                    <span class="metric-value" id="humidity-compliance">0%</span>
+                    <span class="metric-label">Compliance Rate</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value" id="humidity-violations">0</span>
+                    <span class="metric-label">Violations</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value" id="humidity-avg">0%</span>
+                    <span class="metric-label">Average Humidity</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="summary-card alerts">
+            <div class="card-header">
+                <i class="fas fa-exclamation-triangle"></i>
+                <h3>Critical Alerts</h3>
+            </div>
+            <div class="card-content">
+                <div class="metric">
+                    <span class="metric-value" id="active-alerts">0</span>
+                    <span class="metric-label">Active Alerts</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value" id="resolved-alerts">0</span>
+                    <span class="metric-label">Resolved</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value" id="response-time">0min</span>
+                    <span class="metric-label">Avg Response</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Section -->
+    <div class="charts-section">
+        <div class="chart-container">
+            <div class="chart-header">
+                <h3>Temperature Trends</h3>
+                <div class="chart-controls">
+                    <button class="chart-toggle active" data-type="line">Line</button>
+                    <button class="chart-toggle" data-type="area">Area</button>
+                </div>
+            </div>
+            <div id="temperature-chart" class="chart"></div>
+        </div>
+
+        <div class="chart-container">
+            <div class="chart-header">
+                <h3>Humidity Trends</h3>
+                <div class="chart-controls">
+                    <button class="chart-toggle active" data-type="line">Line</button>
+                    <button class="chart-toggle" data-type="area">Area</button>
+                </div>
+            </div>
+            <div id="humidity-chart" class="chart"></div>
+        </div>
+    </div>
+
+    <!-- Detailed Analysis -->
+    <div class="analysis-section">
+        <div class="violations-panel">
+            <div class="panel-header">
+                <h3>Recent Violations</h3>
+                <button id="export-violations" class="export-button">
+                    <i class="fas fa-download"></i> Export
+                </button>
+            </div>
+            <div class="violations-list" id="violations-list">
+                <!-- Violations will be populated here -->
+            </div>
+        </div>
+
+        <div class="trucks-performance">
+            <div class="panel-header">
+                <h3>Trucks Performance Ranking</h3>
+                <div class="ranking-filters">
+                    <button class="ranking-filter active" data-metric="temperature">Temperature</button>
+                    <button class="ranking-filter" data-metric="humidity">Humidity</button>
+                    <button class="ranking-filter" data-metric="overall">Overall</button>
+                </div>
+            </div>
+            <div class="trucks-ranking" id="trucks-ranking">
+                <!-- Truck rankings will be populated here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Parameter Settings Panel -->
+    <div class="parameters-panel">
+        <div class="panel-header">
+            <h3>Optimal Range Parameters</h3>
+            <button id="edit-parameters" class="edit-button">
+                <i class="fas fa-cog"></i> Configure
+            </button>
+        </div>
+        <div class="parameters-grid" id="parameters-grid">
+            <!-- Parameters will be loaded here -->
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="loading-overlay" style="display: none;">
+        <div class="loading-content">
+            <div class="spinner"></div>
+            <p>Loading performance data...</p>
+        </div>
     </div>
 </div>
-
-<div class="kpi">
-    <div class="kpi-top">
-        <div class="kpi-icon">
-            <i class="fas fa-hourglass-start"></i>
-        </div>
-        <div class="kpi-value">
-            <label id="label-process">999</label>
-        </div>
-    </div>
-    <div class="kpi-bottom">
-        <label>Orders in process</label>
-    </div>
-</div>
-
-<div class="kpi">
-    <div class="kpi-top">
-        <div class="kpi-icon">
-            <i class="fas fa-check"></i>
-        </div>
-        <div class="kpi-value">
-            <label id="label-completed">999</label>
-        </div>
-    </div>
-    <div class="kpi-bottom">
-        <label>Completed orders</label>
-    </div>
-</div>
-
-<div class="kpi" id="div-alerts">
-    <div class="kpi-top">
-        <div class="kpi-icon" id="icon-alerts">
-            <i class="fas fa-exclamation"></i>
-        </div>
-        <div class="kpi-value" id="value-alerts">
-            <label id="label-alerts">999</label>
-        </div>
-    </div>
-    <div class="kpi-bottom" id="div-alerts-bottom">
-        <label>Alerts</label>
-    </div>
-</div>
-
-<div class="kpi" id="div-above">
-    <div class="kpi-top">
-        <div class="kpi-icon" id="icon-above">
-            <i class="fas fa-fire"></i>
-        </div>
-        <div class="kpi-value" id="value-above">
-            <label id="label-above">1/20</label>
-        </div>
-    </div>
-    <div class="kpi-bottom" id="div-above-bottom">
-        <label>Trucks above temperature</label>
-    </div>
-</div>
-
-<div class="kpi" id="div-below">
-    <div class="kpi-top">
-        <div class="kpi-icon" id="icon-below">
-            <i class="fas fa-snowflake"></i>
-        </div>
-        <div id="value-below" class="kpi-value">
-            <label id="label-below">3/20</label>
-        </div>
-    </div>
-    <div class="kpi-bottom" id="div-below-bottom">
-        <label>Trucks below temperature</label>
-    </div>
-</div>
-
-<div class="charts">
-    <div id="chart-alerts" style="position: relative; float:left; width: calc(50% - 22px); height:400px; margin:10px;"></div>
-</div>
-
-
-<!-- <div id="chart-duration" style="position: relative; float:left; width: calc(50% - 22px); height:400px; margin:10px;"></div>
-<div id="chart-hour" style="position: relative; float:left; width:calc(50% - 22px); height:400px; margin:10px;"></div> -->
-    

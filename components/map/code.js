@@ -1,4 +1,4 @@
-import { getTruckLocations, getTruckReadings } from "./services.js";
+import { getTruckReadings } from "./services.js";
 
 var map;
 var markers = new L.MarkerClusterGroup();
@@ -76,23 +76,29 @@ async function loadTruckLocations() {
     try {
         // Obtener lecturas más recientes de cada camión
         const readings = await getTruckReadings();
-        const latestReadings = getLatestReadings(readings.data);
-        
-        // Obtener información de los camiones
-        const trucks = await getTruckLocations();
-        
-        // Combinar datos
-        const enrichedTrucks = trucks.map(truck => {
-            const reading = latestReadings.find(r => r.idTruck === truck.id);
-            return {
-                ...truck,
-                lastReading: reading || null
-            };
-        });
-        
-        updateTruckMarkers(enrichedTrucks);
-        updateStats(enrichedTrucks);
-        updateTruckList(enrichedTrucks);
+        const latestReadings = getLatestReadings(readings.data);        
+        const trucks = latestReadings.map(reading => ({
+            id: reading.truck.id,
+            licensePlate: reading.truck.licensePlate,
+            brand: reading.truck.brand,
+            model: reading.truck.model,
+            state: { 
+                id: reading.truck.state.id,
+                message: reading.truck.state.description
+            },
+            lastReading: {
+                temperature: reading.temp,
+                humidity: reading.percHumidity,
+                date: reading.date,
+                latitude: reading.location.latitude,
+                longitude: reading.location.longitude,
+                doorState: reading.doorState
+            }
+        }));
+
+        updateTruckMarkers(trucks);
+        updateStats(trucks);
+        updateTruckList(trucks);
     } catch (error) {
         console.error('Error loading truck locations:', error);
     }
@@ -101,8 +107,8 @@ async function loadTruckLocations() {
 function getLatestReadings(readings) {
     // Agrupar por idTruck y obtener la lectura más reciente de cada uno
     const grouped = readings.reduce((acc, reading) => {
-        if (!acc[reading.idTruck] || new Date(reading.date) > new Date(acc[reading.idTruck].date)) {
-            acc[reading.idTruck] = reading;
+        if (!acc[reading.truck.id] || new Date(reading.date) > new Date(acc[reading.truck.id].date)) {
+            acc[reading.truck.id] = reading;
         }
         return acc;
     }, {});

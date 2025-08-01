@@ -37,6 +37,12 @@
             "component": "components/map"
         },
         {
+            "id": 1009,
+            "text": "Settings",
+            "icon": "cog",
+            "component": "components/Settings"
+        },
+        {
             "id": 1010,
             "text": "Log out",
             "icon": "door-open",

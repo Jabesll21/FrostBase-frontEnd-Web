@@ -1,0 +1,115 @@
+.Group10 {
+    width: 1116px;
+    height: 749px;
+    position: relative;
+    box-shadow: 10px 10px 1px rgba(0, 0, 0, 0.05);
+    border-radius: 16px;
+    margin-left: 50px;
+    margin-top: 100px;
+}
+
+.Top {
+    width: 1116px;
+    height: 749px;
+    padding: 40px 60px;
+    position: absolute;
+    left: 0px;
+    top: 0px;
+    background: white;
+    box-shadow: 0px 4px 1px rgba(0, 0, 0, 0.25);
+    border-radius: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+    box-sizing: border-box;
+}
+
+/* Secciones principales */
+.section {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.section-title {
+    color: #000080;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 700;
+    font-size: 24px;
+    margin: 0;
+}
+
+.fields-row {
+    display: flex;
+    gap: 40px;
+    align-items: flex-start;
+}
+
+.field-group {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.field-label {
+    color: #000080;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 400;
+    font-size: 24px;
+    margin: 0;
+}
+
+/* Campos Input */
+.InputField {
+    width: 129px;
+    padding: 16px;
+    background: white;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    display: flex;
+    align-items: center;
+    box-sizing: border-box;
+}
+
+/* Texto y icono dentro input */
+.Text {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+}
+
+/* Opciones */
+.Option {
+    color: #242731;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 700;
+    font-size: 25px;
+    white-space: nowrap;
+}
+
+/* Iconos */
+.Icon {
+    width: 24px;
+    height: 24px;
+    position: relative;
+    overflow: hidden;
+}
+
+.Vector {
+    position: absolute;
+    background: #7A5CFA;
+    left: 6px;
+    top: 8.6px;
+    width: 12px;
+    height: 7.4px;
+}
+
+.Vector.background {
+    width: 24px;
+    height: 24px;
+    left: 0;
+    top: 0;
+    background: transparent;
+}
+

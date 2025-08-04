@@ -19,3 +19,19 @@ export async function getTruckReadings() {
         throw error;
     }
 }
+
+let driversCache = null;
+
+export async function getDrivers() {
+    if (driversCache) return driversCache;
+    
+    try {
+        const response = await fetch(config.api.url + 'User/Drivers');
+        const data = await response.json();
+        driversCache = data.data || [];
+        return driversCache;
+    } catch (error) {
+        console.error('Error fetching drivers:', error);
+        return [];
+    }
+}

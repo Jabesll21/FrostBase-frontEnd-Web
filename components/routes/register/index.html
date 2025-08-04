@@ -1,0 +1,127 @@
+<link href="components/routes/register/style.css" rel="stylesheet">
+
+<div class="register-route-container">
+    <div class="header">
+        <h1 class="title">Add New Route</h1>
+        <button class="back-button" id="back-button">
+            ← Back to Routes
+        </button>
+    </div>
+
+    <div class="form-container">
+        <form id="route-form" class="route-form">
+            
+            <div class="form-section">
+                <h2 class="section-title">Route Information</h2>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="routeName" class="form-label">Route Name</label>
+                        <input type="text" id="routeName" name="routeName" class="form-input" 
+                               placeholder="e.g., North Route, Downtown Route" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="assignedDriver" class="form-label">Assigned Driver</label>
+                        <select id="assignedDriver" name="assignedDriver" class="form-select" required>
+                            <option value="">Select a driver...</option>
+                            <!-- Drivers will be populated here -->
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Delivery Days</label>
+                    <div class="days-container">
+                        <label class="day-checkbox">
+                            <input type="checkbox" name="deliverDays" value="0">
+                            <span class="checkmark"></span>
+                            Sunday
+                        </label>
+                        <label class="day-checkbox">
+                            <input type="checkbox" name="deliverDays" value="1">
+                            <span class="checkmark"></span>
+                            Monday
+                        </label>
+                        <label class="day-checkbox">
+                            <input type="checkbox" name="deliverDays" value="2">
+                            <span class="checkmark"></span>
+                            Tuesday
+                        </label>
+                        <label class="day-checkbox">
+                            <input type="checkbox" name="deliverDays" value="3">
+                            <span class="checkmark"></span>
+                            Wednesday
+                        </label>
+                        <label class="day-checkbox">
+                            <input type="checkbox" name="deliverDays" value="4">
+                            <span class="checkmark"></span>
+                            Thursday
+                        </label>
+                        <label class="day-checkbox">
+                            <input type="checkbox" name="deliverDays" value="5">
+                            <span class="checkmark"></span>
+                            Friday
+                        </label>
+                        <label class="day-checkbox">
+                            <input type="checkbox" name="deliverDays" value="6">
+                            <span class="checkmark"></span>
+                            Saturday
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h2 class="section-title">Store Selection</h2>
+                
+                <div class="store-selection">
+                    <div class="available-stores">
+                        <h3>Available Stores</h3>
+                        <div class="search-container">
+                            <input type="text" id="store-search" placeholder="Search stores..." class="search-input">
+                            <i class="fas fa-search search-icon"></i>
+                        </div>
+                        <div class="stores-list" id="available-stores-list">
+                            <!-- Available stores will be populated here -->
+                        </div>
+                    </div>
+                    
+                    <div class="selected-stores">
+                        <h3>Route Stores <span id="selected-count">(0)</span></h3>
+                        <div class="selected-stores-list" id="selected-stores-list">
+                            <div class="empty-state">
+                                <i class="fas fa-store"></i>
+                                <p>No stores selected</p>
+                                <small>Select stores from the left panel</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button type="button" id="cancel-button" class="btn-cancel">Cancel</button>
+                <button type="submit" class="btn-save">
+                    <span class="btn-text">Create Route</span>
+                    <span class="btn-loading" style="display: none;">Creating...</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Success Message -->
+<div id="success-message" class="success-message" style="display: none;">
+    <div class="success-content">
+        <div class="success-icon">✓</div>
+        <div class="success-text">
+            <h3>Route Created Successfully!</h3>
+            <p>The new route has been added to the system.</p>
+        </div>
+        <div class="route-summary" id="route-summary">
+            <!-- Route summary will be populated here -->
+        </div>
+        <button id="continue-button" class="btn-continue">Continue</button>
+    </div>
+</div>

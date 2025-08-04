@@ -131,18 +131,20 @@ function createOrderCard(order) {
                     <span>${createdBy}</span>
                 </div>
             </div>
-            <div class="order-actions">
-                
-                <button class="btn-action btn-edit" onclick="editOrder('${orderId}')">
-                    <i class="fas fa-edit"></i> Edit
-                </button>
-                <button class="btn-action btn-status" onclick="changeStatus('${orderId}')">
-                    <i class="fas fa-exchange-alt"></i> Status
-                </button>
-                <button class="btn-action btn-delete" onclick="confirmDeleteOrder('${orderId}')">
-                    <i class="fas fa-trash"></i> Delete
-                </button>
-            </div>
+            <!--
+                <div class="order-actions">
+                    
+                    <button class="btn-action btn-edit" onclick="editOrder('${orderId}')">
+                        <i class="fas fa-edit"></i> Edit
+                    </button>
+                    <button class="btn-action btn-status" onclick="changeStatus('${orderId}')">
+                        <i class="fas fa-exchange-alt"></i> Status
+                    </button>
+                    <button class="btn-action btn-delete" onclick="confirmDeleteOrder('${orderId}')">
+                        <i class="fas fa-trash"></i> Delete
+                    </button>
+                </div>
+            -->
         </div>
     `;
 }

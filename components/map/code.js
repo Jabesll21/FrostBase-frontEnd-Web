@@ -1,4 +1,4 @@
-import { getTruckReadings } from "./services.js";
+import { getTruckReadings, getDrivers } from "./services.js";
 
 var map;
 var markers = new L.MarkerClusterGroup();
@@ -34,23 +34,18 @@ export function init(){
 }
 
 function initializeMap() {
-    // Centro del mapa en Tijuana
     const tijuana = [32.5027, -117.0382];
-    
     const mapContainer = document.getElementById('map-container');
     if (!mapContainer) return;
     
-    // Limpiar contenedor
     mapContainer.innerHTML = '';
     
-    // Crear mapa Leaflet
     map = L.map('map-container', {
         center: tijuana,
         zoom: 12,
         zoomControl: false
     });
     
-    // Añadir control de zoom con posición personalizada
     L.control.zoom({
         position: 'topright'
     }).addTo(map);
@@ -69,14 +64,18 @@ function initializeMap() {
     loadTruckLocations();
     
     // Auto-actualización cada 30 segundos
-    updateInterval = setInterval(loadTruckLocations, 20000);
+    updateInterval = setInterval(loadTruckLocations, 30000);
 }
 
 async function loadTruckLocations() {
     try {
-        // Obtener lecturas más recientes de cada camión
-        const readings = await getTruckReadings();
-        const latestReadings = getLatestReadings(readings.data);        
+        // Obtener lecturas y conductores en paralelo
+        const [readingsResponse, drivers] = await Promise.all([
+            getTruckReadings(),
+            getDrivers()
+        ]);
+        
+        const latestReadings = getLatestReadings(readingsResponse.data);        
         const trucks = latestReadings.map(reading => ({
             id: reading.truck.id,
             licensePlate: reading.truck.licensePlate,
@@ -93,7 +92,9 @@ async function loadTruckLocations() {
                 latitude: reading.location.latitude,
                 longitude: reading.location.longitude,
                 doorState: reading.doorState
-            }
+            },
+            // Añadir información del conductor si existe
+            driver: drivers.find(d => d.truckDefault?.id === reading.truck.id)
         }));
 
         updateTruckMarkers(trucks);
@@ -116,9 +117,12 @@ function getLatestReadings(readings) {
     return Object.values(grouped);
 }
 
-function updateTruckMarkers(trucks) {
+async function updateTruckMarkers(trucks) {
     // Limpiar marcadores anteriores
     markers.clearLayers();
+    
+    // Obtener lista de conductores
+    const drivers = await getDrivers();
     
     trucks.forEach(truck => {
         if (!truck.lastReading) return;
@@ -126,34 +130,65 @@ function updateTruckMarkers(trucks) {
         const { latitude, longitude } = truck.lastReading;
         if (!latitude || !longitude) return;
         
+        // Encontrar el conductor asignado a este camión
+        const driver = drivers.find(d => d.truckDefault?.id === truck.id);
+        const firstName = driver?.name?.firstName || 'Unknown';
+        
+        // Crear marcador
         const marker = L.marker([latitude, longitude], {
             icon: truckIcons[truck.state?.id] || truckIcons['AV'],
             truckId: truck.id
         });
         
+        // URL de avatar aleatorio basado en el ID del conductor para consistencia
+        const avatarUrl = driver 
+            ? `https://avatar.iran.liara.run/public?seed=${driver.id}`
+            : 'https://avatar.iran.liara.run/public';
+        
         // Tooltip con información básica
         marker.bindTooltip(`
             <div class="tooltip-header">${truck.licensePlate}</div>
             <div class="tooltip-content">
+                <p><strong>Driver:</strong> ${firstName}</p>
                 <p><strong>Status:</strong> ${truck.state?.message}</p>
-                <p><strong>Last Update:</strong> ${new Date(truck.lastReading.date).toLocaleTimeString()}</p>
             </div>
         `);
         
         // Popup con información detallada
         marker.bindPopup(`
-            <div class="popup-header">${truck.licensePlate}</div>
+            <div class="popup-header">
+                <div class="driver-profile">
+                    <img src="${avatarUrl}" alt="${firstName}" class="driver-avatar">
+                    <span class="driver-name">${firstName}</span>
+                </div>
+                <div class="truck-plate">${truck.licensePlate}</div>
+            </div>
             <div class="popup-content">
-                <p><strong>Vehicle:</strong> ${truck.brand} ${truck.model}</p>
-                <p><strong>Status:</strong> ${truck.state?.message}</p>
-                <p><strong>Temperature:</strong> ${truck.lastReading.temperature}°C</p>
-                <p><strong>Humidity:</strong> ${truck.lastReading.humidity}%</p>
-                <p><strong>Door State:</strong> ${truck.lastReading.doorState ? 'Open' : 'Closed'}</p>
-                <p><strong>Last Update:</strong> ${new Date(truck.lastReading.date).toLocaleString()}</p>
+                <div class="truck-info">
+                    <p><strong>Vehicle:</strong> ${truck.brand} ${truck.model}</p>
+                    <p><strong>Status:</strong> ${truck.state?.message}</p>
+                </div>
+                <div class="sensor-readings">
+                    <div class="reading">
+                        <i class="fas fa-temperature-low"></i>
+                        <span>${truck.lastReading.temperature}°C</span>
+                    </div>
+                    <div class="reading">
+                        <i class="fas fa-tint"></i>
+                        <span>${truck.lastReading.humidity}%</span>
+                    </div>
+                    <div class="reading">
+                        <i class="fas fa-door-${truck.lastReading.doorState ? 'open' : 'closed'}"></i>
+                        <span>Door ${truck.lastReading.doorState ? 'Open' : 'Closed'}</span>
+                    </div>
+                </div>
+                <div class="last-update">
+                    <i class="fas fa-clock"></i>
+                    <span>${new Date(truck.lastReading.date).toLocaleString()}</span>
+                </div>
             </div>
         `);
         
-        // Evento click
         marker.on('click', () => {
             selectTruck(truck.id);
         });
@@ -161,8 +196,8 @@ function updateTruckMarkers(trucks) {
         markers.addLayer(marker);
     });
     
-    // Asegurarse de que los marcadores estén visibles
-    if (trucks.length > 0 && trucks.some(t => t.lastReading)) {
+    // Ajustar vista del mapa
+    if (trucks.length > 0) {
         const locations = trucks
             .filter(t => t.lastReading)
             .map(t => [t.lastReading.latitude, t.lastReading.longitude]);
@@ -265,26 +300,6 @@ function focusOnTruck(truckId) {
     });
 }
 
-function refreshMap() {
-    console.log('Refreshing truck locations...');
-    const refreshBtn = document.getElementById('refresh-button');
-    
-    if (refreshBtn) {
-        refreshBtn.disabled = true;
-        refreshBtn.innerHTML = 'Updating...';
-    }
-    
-    loadTruckLocations().finally(() => {
-        if (refreshBtn) {
-            refreshBtn.disabled = false;
-            refreshBtn.innerHTML = 'Refresh';
-        }
-    });
-}
-
-function toggleFilters() {
-    alert('Filter options:\n• By Status\n• By Route\n• By Driver\n• Temperature Range\n• Time Range');
-}
 
 // Cleanup function
 window.addEventListener('beforeunload', () => {

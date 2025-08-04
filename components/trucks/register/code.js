@@ -17,6 +17,7 @@ export function init(params = {}) {
         isEditMode = false;
         document.querySelector('.title').textContent = 'Add New Truck';
         document.querySelector('.btn-save .btn-text').textContent = 'Save Truck';
+        document.getElementById('status-form').style.display = 'none';
     }
     
     setupEventListeners();
@@ -111,7 +112,7 @@ function hideLoadingForm() {
 
 function validateLicensePlate(value) {
     // Validate format: ABC-123-D
-    const pattern = /^[A-Z0-9]{3}-[0-9]{3}-[A-Z]$/;
+    const pattern = /^[A-Z0-9]{3}-[0-9]{3}-[A-Z]{2}$/;
     return pattern.test(value);
 }
 
@@ -138,7 +139,7 @@ function validateForm() {
     // Validate license plate format
     const licensePlate = formData.get('license_plate');
     if (licensePlate && !validateLicensePlate(licensePlate)) {
-        showFieldError(document.getElementById('license_plate'), 'Please use the correct license plate format: ABC-123-D');
+        showFieldError(document.getElementById('license_plate'), 'Please use the correct license plate format: ABC-123-DE');
         isValid = false;
     }
     

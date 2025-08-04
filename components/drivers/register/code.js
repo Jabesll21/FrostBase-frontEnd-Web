@@ -1,6 +1,7 @@
-import { createUser, getDriverById, updateDriver } from '../services.js';
+import { createUser, getDriverById, updateDriver, getUnassignedTruck } from '../services.js';
 
 let currentDriverId = null;
+let currentDriverTruckId = null;
 let isEditMode = false;
 
 export function init(params = {}) {
@@ -9,6 +10,7 @@ export function init(params = {}) {
     // Verificar si estamos en modo edición
     if (params.driverId) {
         currentDriverId = params.driverId;
+        currentDriverTruckId = params.truckId;
         isEditMode = true;
         document.querySelector('.title').textContent = 'Edit Driver';
         document.querySelector('.btn-save').textContent = 'Update Driver';
@@ -275,7 +277,7 @@ function handleFormSubmit(e) {
             saveButton.textContent = originalText;
             return;
         }
-        
+
         const updateData = {
             id: currentDriverId,
             name: {
@@ -285,7 +287,8 @@ function handleFormSubmit(e) {
             },
             email: formData.get('email').trim(),
             phone: formData.get('phone').trim(),
-            birthDate: birthDateValue // Formato "YYYY-MM-DD" como string
+            birthDate: birthDateValue, // Formato "YYYY-MM-DD" como string
+            idTruckDefault: currentDriverTruckId
         };
 
         console.log('Final update data (matching Swagger):', JSON.stringify(updateData, null, 2));
@@ -296,7 +299,8 @@ function handleFormSubmit(e) {
             middleName: typeof updateData.name.middleName,
             email: typeof updateData.email,
             phone: typeof updateData.phone,
-            birthDate: typeof updateData.birthDate
+            birthDate: typeof updateData.birthDate,
+            idTruckDefault: typeof updateData.idTruckDefault
         });
 
         updateDriver(currentDriverId, updateData)
@@ -315,27 +319,41 @@ function handleFormSubmit(e) {
             });
     } else {
         // Modo creación
-        const userData = {
-            name: formData.get('firstName'),
-            lastName: formData.get('lastName'),
-            middleName: formData.get('middleName') || '',
-            email: formData.get('email'),
-            phone: formData.get('phone'),
-            birthDate: formData.get('birth') ? new Date(formData.get('birth')) : new Date('1990-01-01'),
-            password: formData.get('password'),
-            isAdmin: false
-        };
+        getUnassignedTruck()
+            .then(unassignedTruck => {
+                if (!unassignedTruck) {
+                    throw new Error('There is no trucks available to asign');
+                }
 
-        console.log('Creating driver with data:', userData);
+                const userData = {
+                    name: formData.get('firstName').trim(),
+                    lastName: formData.get('lastName').trim(),
+                    middleName: formData.get('middleName')?.trim() || "",
+                    email: formData.get('email').trim(),
+                    phone: formData.get('phone').trim(),
+                    birthDate: formData.get('birth'), // Formato "YYYY-MM-DD"
+                    password: formData.get('password'),
+                    isAdmin: false,
+                    idTruckDefault: unassignedTruck.id // Añadimos el ID del camión asignado
+                };
 
-        createUser(userData)
-            .then(result => {
-                console.log('Driver created successfully:', result);
-                showSuccessMessage('Driver Added Successfully!', 'The new driver has been registered in the system.');
+                console.log('Creating driver with data:', userData);
+                console.log('Assigned truck:', unassignedTruck);
+
+                return createUser(userData)
+                    .then(result => {
+                        console.log('Driver created successfully:', result);
+                        showSuccessMessage(
+                            'Driver Added Successfully!', 
+                            `The new driver has been registered and assigned to truck ${unassignedTruck.licensePlate}`
+                        );
+                        return result;
+                    });
             })
             .catch(error => {
-                console.error('Error creating driver:', error);
+                console.error('Error in driver creation process:', error);
                 showAlert('Error creating driver: ' + error.message);
+                throw error; // Re-lanzamos el error para el finally
             })
             .finally(() => {
                 saveButton.classList.remove('loading');

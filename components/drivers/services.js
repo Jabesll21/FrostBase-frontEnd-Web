@@ -1,6 +1,6 @@
 import { config } from '../../js/config.js'
 
-export async function getDrivers() {
+export async function getDrivers(activeOnly = true) {
     try {
         const url = config.api.url + "User/Drivers";
         const response = await fetch(url);
@@ -11,8 +11,10 @@ export async function getDrivers() {
         }
         
         const result = await response.json();
+        const drivers = Array.isArray(result) ? result : (result.data || []);
         
-        return Array.isArray(result) ? result : (result.data || []);
+        // Filtrar por estado active si activeOnly es true
+        return activeOnly ? drivers.filter(driver => driver.active === true) : drivers;
         
     } catch (error) {
         console.error('Error fetching drivers:', error);
@@ -202,5 +204,38 @@ export async function createUser(userData) {
     } catch (error) {
         console.error('Error creating user:', error);
         throw error;
+    }
+}
+
+export async function getUnassignedTruck() {
+    try {
+        // Obtener todos los conductores y sus camiones asignados
+        const driversResponse = await fetch(`${config.api.url}User/Drivers`);
+        const driversData = await driversResponse.json();
+        
+        // Obtener todos los camiones
+        const trucksResponse = await fetch(`${config.api.url}Truck`);
+        const trucksData = await trucksResponse.json();
+        
+        if (!driversData.data || !trucksData.data) {
+            throw new Error('Invalid data structure from API');
+        }
+        
+        // Extraer IDs de camiones asignados
+        const assignedTruckIds = driversData.data
+            .map(driver => driver.truckDefault?.id)
+            .filter(id => id !== undefined);
+        
+        // Encontrar camiones no asignados
+        const unassignedTrucks = trucksData.data.filter(
+            truck => !assignedTruckIds.includes(truck.id)
+        );
+        
+        // Devolver el primer camión no asignado (o null si no hay)
+        return unassignedTrucks.length > 0 ? unassignedTrucks[0] : null;
+        
+    } catch (error) {
+        console.error('Error finding unassigned truck:', error);
+        return null;
     }
 }

@@ -1,4 +1,4 @@
-import { createUser, getDriverById, updateDriver } from '../services.js';
+import { createUser, getDriverById, updateDriver, getUnassignedTruck } from '../services.js';
 
 let currentDriverId = null;
 let currentDriverTruckId = null;
@@ -319,27 +319,41 @@ function handleFormSubmit(e) {
             });
     } else {
         // Modo creación
-        const userData = {
-            name: formData.get('firstName'),
-            lastName: formData.get('lastName'),
-            middleName: formData.get('middleName') || '',
-            email: formData.get('email'),
-            phone: formData.get('phone'),
-            birthDate: formData.get('birth') ? new Date(formData.get('birth')) : new Date('1990-01-01'),
-            password: formData.get('password'),
-            isAdmin: false
-        };
+        getUnassignedTruck()
+            .then(unassignedTruck => {
+                if (!unassignedTruck) {
+                    throw new Error('There is no trucks available to asign');
+                }
 
-        console.log('Creating driver with data:', userData);
+                const userData = {
+                    name: formData.get('firstName').trim(),
+                    lastName: formData.get('lastName').trim(),
+                    middleName: formData.get('middleName')?.trim() || "",
+                    email: formData.get('email').trim(),
+                    phone: formData.get('phone').trim(),
+                    birthDate: formData.get('birth'), // Formato "YYYY-MM-DD"
+                    password: formData.get('password'),
+                    isAdmin: false,
+                    idTruckDefault: unassignedTruck.id // Añadimos el ID del camión asignado
+                };
 
-        createUser(userData)
-            .then(result => {
-                console.log('Driver created successfully:', result);
-                showSuccessMessage('Driver Added Successfully!', 'The new driver has been registered in the system.');
+                console.log('Creating driver with data:', userData);
+                console.log('Assigned truck:', unassignedTruck);
+
+                return createUser(userData)
+                    .then(result => {
+                        console.log('Driver created successfully:', result);
+                        showSuccessMessage(
+                            'Driver Added Successfully!', 
+                            `The new driver has been registered and assigned to truck ${unassignedTruck.licensePlate}`
+                        );
+                        return result;
+                    });
             })
             .catch(error => {
-                console.error('Error creating driver:', error);
+                console.error('Error in driver creation process:', error);
                 showAlert('Error creating driver: ' + error.message);
+                throw error; // Re-lanzamos el error para el finally
             })
             .finally(() => {
                 saveButton.classList.remove('loading');

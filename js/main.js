@@ -12,21 +12,10 @@ function init() {
         toggleSideMenu();
     })
     showSideMenu(); //show side menu
-    loadComponent('components\\drivers'); //show component at start
+    loadComponent('components\\map'); //show component at start
 }
 window.loadComponent = loadComponent;
 
-export function loadComponent(component) {
-    console.log('Loading component:', component);
-    var url = component + '/index.html';
-    var urlCode = '../' + component + '/code.js';
-    
-    fetch(url)
-        .then((response) => { return response.text(); })
-        .then((html) => { loadHtml(html) })
-        .then(() => { importModule(urlCode) })
-        .catch((error) => { console.error('Invalid HTML file:', error); });
-}
 
 //toggle side menu
 export function toggleSideMenu(){
@@ -42,7 +31,18 @@ export function toggleSideMenu(){
         document.getElementById('content').style.width = '100%'
     }
 }
+   
+export function loadComponent(component) {
+    console.log('Loading component:', component);
+    var url = component + '/index.html';
+    var urlCode = '../' + component + '/code.js';
     
+    fetch(url)
+        .then((response) => { return response.text(); })
+        .then((html) => { loadHtml(html) })
+        .then(() => { importModule(urlCode) })
+        .catch((error) => { console.error('Invalid HTML file:', error); });
+} 
 
 //loading html
 async function loadHtml(html) {

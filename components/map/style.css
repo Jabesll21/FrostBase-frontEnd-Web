@@ -422,6 +422,73 @@
     color: #555;
 }
 
+
+
+
+.driver-profile {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.driver-avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-right: 10px;
+    border: 2px solid #ddd;
+}
+
+.driver-name {
+    font-weight: bold;
+    font-size: 1.1em;
+}
+
+.truck-plate {
+    background: #f0f0f0;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-family: monospace;
+    display: inline-block;
+    margin-bottom: 10px;
+}
+
+.popup-content {
+    margin-top: 10px;
+}
+
+.sensor-readings {
+    display: flex;
+    justify-content: space-between;
+    margin: 10px 0;
+}
+
+.reading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-size: 0.9em;
+}
+
+.reading i {
+    font-size: 1.2em;
+    margin-bottom: 5px;
+    color: #555;
+}
+
+.last-update {
+    font-size: 0.8em;
+    color: #666;
+    text-align: right;
+    margin-top: 10px;
+}
+
+
+
+
+
+
 /* Cluster markers */
 .marker-cluster-small {
     background-color: rgba(181, 226, 140, 0.6);

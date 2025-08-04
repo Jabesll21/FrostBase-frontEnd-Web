@@ -54,9 +54,9 @@
 .stats-summary {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 20px;
-    margin-bottom: 30px;
-    padding: 20px;
+    gap: 5px;
+    margin-bottom: 10px;
+    padding: 5px;
     background: white;
     border-radius: 15px;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
@@ -88,8 +88,8 @@
     display: flex;
     align-items: center;
     gap: 20px;
-    margin-bottom: 30px;
-    padding: 20px;
+    margin-bottom: 10px;
+    padding: 10px;
     background: white;
     border-radius: 15px;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
@@ -103,7 +103,7 @@
 
 .day-buttons {
     display: flex;
-    gap: 8px;
+    gap: 20px;
     flex-wrap: wrap;
 }
 
@@ -131,7 +131,6 @@
     display: grid;
     grid-template-columns: 2fr 1fr;
     gap: 30px;
-    height: 600px;
 }
 
 /* Map Section */
@@ -142,6 +141,7 @@
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
     display: flex;
     flex-direction: column;
+    height: 380px;
 }
 
 .map-header {
@@ -187,7 +187,7 @@
     border-radius: 10px;
     background: #f8fafc;
     position: relative;
-    min-height: 400px;
+    min-height: 340px;
 }
 
 /* Map Legend */
@@ -245,6 +245,7 @@
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
     display: flex;
     flex-direction: column;
+    height: 380px;
 }
 
 .routes-list-header {

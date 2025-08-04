@@ -1,8 +1,8 @@
 import { getTruckReadings, getDrivers } from "./services.js";
 
 var map;
-var markers = new L.MarkerClusterGroup();
 var selectedTruck = null;
+var markers = L.layerGroup();
 var truckLayer;
 var updateInterval;
 var truckIcons = {
@@ -38,26 +38,29 @@ function initializeMap() {
     const mapContainer = document.getElementById('map-container');
     if (!mapContainer) return;
     
+    // Limpiar el contenedor
     mapContainer.innerHTML = '';
     
+    // Inicializar el mapa primero
     map = L.map('map-container', {
         center: tijuana,
         zoom: 12,
         zoomControl: false
     });
     
+    // Añadir controles de zoom
     L.control.zoom({
         position: 'topright'
     }).addTo(map);
     
-    // Añadir capa CartoDB Positron
+    // Añadir capa de tiles
     L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
         subdomains: 'abcd',
         maxZoom: 19
     }).addTo(map);
     
-    // Crear capa para agrupar marcadores
+    // Añadir capa de marcadores después de que el mapa esté inicializado
     map.addLayer(markers);
     
     // Cargar ubicaciones de camiones
@@ -66,7 +69,6 @@ function initializeMap() {
     // Auto-actualización cada 30 segundos
     updateInterval = setInterval(loadTruckLocations, 30000);
 }
-
 async function loadTruckLocations() {
     try {
         // Obtener lecturas y conductores en paralelo

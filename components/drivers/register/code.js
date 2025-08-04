@@ -1,6 +1,7 @@
 import { createUser, getDriverById, updateDriver } from '../services.js';
 
 let currentDriverId = null;
+let currentDriverTruckId = null;
 let isEditMode = false;
 
 export function init(params = {}) {
@@ -9,6 +10,7 @@ export function init(params = {}) {
     // Verificar si estamos en modo edición
     if (params.driverId) {
         currentDriverId = params.driverId;
+        currentDriverTruckId = params.truckId;
         isEditMode = true;
         document.querySelector('.title').textContent = 'Edit Driver';
         document.querySelector('.btn-save').textContent = 'Update Driver';
@@ -275,7 +277,7 @@ function handleFormSubmit(e) {
             saveButton.textContent = originalText;
             return;
         }
-        
+
         const updateData = {
             id: currentDriverId,
             name: {
@@ -285,7 +287,8 @@ function handleFormSubmit(e) {
             },
             email: formData.get('email').trim(),
             phone: formData.get('phone').trim(),
-            birthDate: birthDateValue // Formato "YYYY-MM-DD" como string
+            birthDate: birthDateValue, // Formato "YYYY-MM-DD" como string
+            idTruckDefault: currentDriverTruckId
         };
 
         console.log('Final update data (matching Swagger):', JSON.stringify(updateData, null, 2));
@@ -296,7 +299,8 @@ function handleFormSubmit(e) {
             middleName: typeof updateData.name.middleName,
             email: typeof updateData.email,
             phone: typeof updateData.phone,
-            birthDate: typeof updateData.birthDate
+            birthDate: typeof updateData.birthDate,
+            idTruckDefault: typeof updateData.idTruckDefault
         });
 
         updateDriver(currentDriverId, updateData)

@@ -62,7 +62,8 @@ export async function updateDriver(driverId, driverData) {
             },
             email: driverData.email,
             phone: driverData.phone,
-            birthDate: driverData.birthDate 
+            birthDate: driverData.birthDate,
+            idTruckDefault: driverData.idTruckDefault
         };
         
         console.log('Driver update DTO (Swagger format):', JSON.stringify(updateDto, null, 2));

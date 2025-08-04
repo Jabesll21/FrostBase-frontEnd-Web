@@ -101,7 +101,7 @@ function printDrivers(drivers) {
             </td>
             <td class="actions" style="padding: 15px; text-align: center;">
                 <div class="action-buttons">
-                    <button class="btn-edit" onclick="window.editDriver('${driver.id}')" title="Edit Driver">
+                    <button class="btn-edit" onclick="window.editDriver('${driver.id}', '${driver.truckDefault.id}')" title="Edit Driver">
                         <i class="fas fa-edit"></i> Edit
                     </button>
                     <button class="btn-delete" onclick="window.confirmDelete('${driver.id}', '${fullName}')" title="Delete Driver">
@@ -131,7 +131,7 @@ function calculateAge(birthDate) {
 }
 
 // Funciones globales
-window.editDriver = function(id) {
+window.editDriver = async function(id, idTruck) {
     console.log('Editing driver:', id);
     
     if (!id) {
@@ -143,7 +143,7 @@ window.editDriver = function(id) {
     showToast('Loading driver data...', 'info');
     
     // Cargar el componente de registro en modo edición
-    loadComponent('components/drivers/register', { driverId: id });
+    loadComponent('components/drivers/register', { driverId: id, truckId: idTruck });
 }
 
 window.confirmDelete = async function(id, driverName) {

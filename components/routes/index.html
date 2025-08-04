@@ -1,0 +1,126 @@
+<link href="components/routes/style.css" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+<div class="routes-container">
+    <!-- Header -->
+    <div class="header">
+        <div class="h1">
+            <h1>Routes Management</h1>
+        </div>
+        <div class="controls">
+            <button id="add-button" class="add-button">
+                <i class="fas fa-plus"></i> Add New Route
+            </button>
+        </div>
+    </div>
+
+    <!-- Stats Summary -->
+    <div class="stats-summary">
+        <div class="stat-item">
+            <div class="stat-number" id="total-routes">0</div>
+            <div class="stat-label">Total Routes</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-number" id="active-routes">0</div>
+            <div class="stat-label">Active Today</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-number" id="total-stores">0</div>
+            <div class="stat-label">Stores Covered</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-number" id="assigned-drivers">0</div>
+            <div class="stat-label">Assigned Drivers</div>
+        </div>
+    </div>
+
+    <!-- Day Filter -->
+    <div class="day-filter">
+        <div class="day-filter-label">Filter by Day:</div>
+        <div class="day-buttons">
+            <button class="day-btn" data-day="-1">All</button>
+            <button class="day-btn" data-day="0">Sunday</button>
+            <button class="day-btn" data-day="1">Monday</button>
+            <button class="day-btn" data-day="2" id="today-btn">Tuesday</button>
+            <button class="day-btn" data-day="3">Wednesday</button>
+            <button class="day-btn" data-day="4">Thursday</button>
+            <button class="day-btn" data-day="5">Friday</button>
+            <button class="day-btn" data-day="6">Saturday</button>
+        </div>
+    </div>
+
+    <!-- Main Content Layout -->
+    <div class="main-layout">
+        <!-- Map Section -->
+        <div class="map-section">
+            <div class="map-header">
+                <h3>Routes Map</h3>
+                <div class="map-controls">
+                    <button id="toggle-all-routes" class="map-control-btn">
+                        <i class="fas fa-eye"></i> Toggle All
+                    </button>
+                    <button id="center-map" class="map-control-btn">
+                        <i class="fas fa-crosshairs"></i> Center
+                    </button>
+                </div>
+            </div>
+            <div id="routes-map" class="routes-map"></div>
+            
+            <!-- Map Legend -->
+            <div class="map-legend">
+                <div class="legend-title">Routes Legend</div>
+                <div class="legend-items">
+                    <div class="legend-item">
+                        <div class="legend-color route-active"></div>
+                        <span>Active Today</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color route-inactive"></div>
+                        <span>Other Routes</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color store-marker"></div>
+                        <span>Stores</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Routes List Section -->
+        <div class="routes-list-section">
+            <div class="routes-list-header">
+                <h3>Routes List</h3>
+                <div class="list-controls">
+                    <input type="text" id="search-routes" placeholder="Search routes..." class="search-input">
+                </div>
+            </div>
+            
+            <div class="routes-list" id="routes-list">
+            </div>
+        </div>
+    </div>
+
+    <!-- Route Details Modal -->
+    <div id="route-details-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modal-route-name">Route Details</h3>
+                <span class="close" id="close-modal">&times;</span>
+            </div>
+            <div class="modal-body" id="modal-body">
+            </div>
+            <div class="modal-footer">
+                <button id="edit-route-btn" class="btn-edit">Edit Route</button>
+                <button id="delete-route-btn" class="btn-delete">Delete Route</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="loading-overlay" style="display: none;">
+        <div class="loading-content">
+            <div class="spinner"></div>
+            <p>Loading routes data...</p>
+        </div>
+    </div>
+</div>

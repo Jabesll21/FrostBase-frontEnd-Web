@@ -37,6 +37,13 @@
             "component": "components/map"
         },
         {
+            "id": 1009,
+            "text": "Routes",
+            "icon": "route",
+            "component": "components/routes"
+
+        },
+        {
             "id": 1010,
             "text": "Log out",
             "icon": "door-open",

@@ -41,7 +41,7 @@ function setupEventListeners() {
 
 function validateLicensePlate(value) {
     // Validate format: ABC-123-D
-    const pattern = /^[A-Z0-9]{3}-[0-9]{3}-[A-Z]$/;
+    const pattern = /^[A-Z0-9]{3}-[0-9]{3}-[A-Z]{2}$/;
     return pattern.test(value);
 }
 
@@ -62,7 +62,7 @@ function validateForm() {
     // Validate license plate format
     const licensePlate = formData.get('license_plate');
     if (!validateLicensePlate(licensePlate)) {
-        showAlert('Please use the correct license plate format: ABC-123-D');
+        showAlert('Please use the correct license plate format: ABC-123-DE');
         return false;
     }
     

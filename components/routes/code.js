@@ -651,18 +651,55 @@ function showSuccess(message) {
     alert('Success: ' + message);
 }
 
-function loadComponent(path, params = {}) {
-    console.log('Loading component:', path, params);
-    
-    if (path === 'components/routes/register') {
-        window.location.href = 'components/routes/register/index.html';
-    } else if (path === 'components/routes/edit') {
-        window.location.href = `components/routes/edit/index.html?routeId=${params.routeId}`;
-    } else {
-        console.warn('Unknown component path:', path);
+//
+
+function loadComponent(component, params = {}) {
+    try {
+        console.log('Loading component:', component);
+        const url = component + '/index.html';
+        const urlCode = '../../../' + component + '/code.js';
+        
+        fetch(url)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+                return response.text();
+            })
+            .then(html => {
+                const contentElement = document.getElementById('content');
+                if (contentElement) {
+                    contentElement.innerHTML = html;
+                    return importModule(urlCode, params);
+                } else {
+                    throw new Error('Content element not found');
+                }
+            })
+            .catch(error => {
+                console.error('Error loading component:', error);
+                showToast('Error loading page: ' + error.message, 'error');
+            });
+    } catch (error) {
+        console.error('Error in loadComponent:', error);
+        showToast('Error loading page', 'error');
     }
 }
 
+async function importModule(moduleUrl, params = {}) {
+    try {
+        const module = await import(moduleUrl + '?v=' + Date.now());
+        if (module.init) {
+            module.init(params);
+        } else {
+            console.error('Module does not export init function');
+        }
+    } catch (error) {
+        console.error('Error importing module:', error);
+        throw error;
+    }
+}
+
+// Export functions that might be needed externally
 export {
     loadRoutesData,
     selectRoute,

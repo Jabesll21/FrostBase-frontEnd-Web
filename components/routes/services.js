@@ -14,7 +14,7 @@ export async function getRoutes() {
         const result = await response.json();
         console.log('Routes response:', result);
         
-        return result.data || [];
+        return result;
     } catch (error) {
         console.error('Error fetching routes:', error);
         throw error;
@@ -56,7 +56,7 @@ export async function getTodayRoutes() {
         const result = await response.json();
         console.log('Today routes response:', result);
         
-        return result.data || [];
+        return result;
     } catch (error) {
         console.error('Error fetching today routes:', error);
         throw error;
@@ -77,7 +77,7 @@ export async function getRoutesByDay(day) {
         const result = await response.json();
         console.log('Routes by day response:', result);
         
-        return result.data || [];
+        return result;
     } catch (error) {
         console.error('Error fetching routes by day:', error);
         throw error;
@@ -89,7 +89,7 @@ export async function createRoute(routeData) {
     try {
         const url = config.api.url + "Route";
         console.log('Creating route at:', url);
-        console.log('Route data being sent:', routeData);
+        console.log('Route data being sent:', JSON.stringify(routeData, null, 2));
         
         const response = await fetch(url, {
             method: 'POST',
@@ -102,9 +102,39 @@ export async function createRoute(routeData) {
         console.log('Create route response status:', response.status);
         
         if (!response.ok) {
-            const errorText = await response.text();
-            console.error('Create route error response:', errorText);
-            throw new Error(`HTTP error! status: ${response.status} - ${errorText}`);
+            let errorMessage = `HTTP error! status: ${response.status}`;
+            
+            try {
+                const contentType = response.headers.get('content-type');
+                if (contentType && contentType.includes('application/json')) {
+                    const errorData = await response.json();
+                    console.error('Create route error JSON:', JSON.stringify(errorData, null, 2));
+                    
+                    if (errorData.title) {
+                        errorMessage += `: ${errorData.title}`;
+                    }
+                    if (errorData.detail) {
+                        errorMessage += ` - ${errorData.detail}`;
+                    }
+                    if (errorData.errors) {
+                        const errors = Object.entries(errorData.errors)
+                            .map(([field, messages]) => `${field}: ${Array.isArray(messages) ? messages.join(', ') : messages}`)
+                            .join('\n');
+                        errorMessage += `\nValidation errors:\n${errors}`;
+                    }
+                    if (errorData.message) {
+                        errorMessage += ` - ${errorData.message}`;
+                    }
+                } else {
+                    const errorText = await response.text();
+                    console.error('Create route error text:', errorText);
+                    errorMessage += `: ${errorText}`;
+                }
+            } catch (parseError) {
+                console.error('Could not parse error response:', parseError);
+            }
+            
+            throw new Error(errorMessage);
         }
         
         const result = await response.json();
@@ -192,7 +222,7 @@ export async function getDrivers() {
         const result = await response.json();
         console.log('Drivers response:', result);
         
-        return result.data || [];
+        return result;
     } catch (error) {
         console.error('Error fetching drivers:', error);
         throw error;
@@ -213,22 +243,9 @@ export async function getStores() {
         const result = await response.json();
         console.log('Stores response:', result);
         
-        return result.data || [];
+        return result;
     } catch (error) {
         console.error('Error fetching stores:', error);
         throw error;
-    }
-}
-
-// Navigation function to load components
-export function loadComponent(path, params = {}) {
-    console.log('Loading component:', path, params);
-    
-    if (path === 'components/routes/register') {
-        window.location.href = 'components/routes/register/index.html';
-    } else if (path === 'components/routes/edit') {
-        window.location.href = `components/routes/edit/index.html?routeId=${params.routeId}`;
-    } else {
-        console.warn('Unknown component path:', path);
     }
 }

@@ -34,23 +34,18 @@ export function init(){
 }
 
 function initializeMap() {
-    // Centro del mapa en Tijuana
     const tijuana = [32.5027, -117.0382];
-    
     const mapContainer = document.getElementById('map-container');
     if (!mapContainer) return;
     
-    // Limpiar contenedor
     mapContainer.innerHTML = '';
     
-    // Crear mapa Leaflet
     map = L.map('map-container', {
         center: tijuana,
         zoom: 12,
         zoomControl: false
     });
     
-    // Añadir control de zoom con posición personalizada
     L.control.zoom({
         position: 'topright'
     }).addTo(map);
@@ -69,7 +64,7 @@ function initializeMap() {
     loadTruckLocations();
     
     // Auto-actualización cada 30 segundos
-    updateInterval = setInterval(loadTruckLocations, 20000);
+    updateInterval = setInterval(loadTruckLocations, 30000);
 }
 
 async function loadTruckLocations() {
@@ -265,26 +260,6 @@ function focusOnTruck(truckId) {
     });
 }
 
-function refreshMap() {
-    console.log('Refreshing truck locations...');
-    const refreshBtn = document.getElementById('refresh-button');
-    
-    if (refreshBtn) {
-        refreshBtn.disabled = true;
-        refreshBtn.innerHTML = 'Updating...';
-    }
-    
-    loadTruckLocations().finally(() => {
-        if (refreshBtn) {
-            refreshBtn.disabled = false;
-            refreshBtn.innerHTML = 'Refresh';
-        }
-    });
-}
-
-function toggleFilters() {
-    alert('Filter options:\n• By Status\n• By Route\n• By Driver\n• Temperature Range\n• Time Range');
-}
 
 // Cleanup function
 window.addEventListener('beforeunload', () => {

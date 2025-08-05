@@ -1,5 +1,37 @@
 import { getDrivers, deleteDriver } from './services.js';
 
+// Función para generar avatar consistente basado en ID (igual que en el mapa)
+function getDriverAvatar(driverId, driverName = '') {
+    if (!driverId) {
+        // Si no hay ID, usar un avatar por defecto consistente
+        return 'photos/drivers/default.jpg';
+    }
+    
+    // Primero intentar buscar foto local basada en el ID
+    const localPhotoUrl = `photos/drivers/${driverId}.jpg`;
+    
+    return localPhotoUrl;
+}
+
+// Función para generar hash consistente del ID
+function hashCode(str) {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+        const char = str.charCodeAt(i);
+        hash = ((hash << 5) - hash) + char;
+        hash = hash & hash; // Convertir a 32-bit integer
+    }
+    return Math.abs(hash);
+}
+
+// Función para generar URL de fallback
+function getDriverFallbackUrl(driverId) {
+    const hash = hashCode(driverId);
+    const photoNumber = (hash % 100) + 1;
+    const gender = hash % 2 === 0 ? 'men' : 'women';
+    return `https://randomuser.me/api/portraits/${gender}/${photoNumber}.jpg`;
+}
+
 export function init() {
     console.log('=== DRIVERS INIT ===');
     setupEventListeners();
@@ -82,44 +114,42 @@ function printDrivers(drivers) {
         const lastName = driver.name?.lastName || driver.lastName || '';
         const fullName = `${firstName} ${lastName}`.trim() || 'Unknown';
         
-        const row = document.createElement('tr');
+        // Obtener avatar del conductor
+        const avatarUrl = getDriverAvatar(driver.id, fullName);
+        const fallbackUrl = getDriverFallbackUrl(driver.id);
+        
+    
+  const row = document.createElement('tr');
         row.className = 'driver-row';
         row.innerHTML = `
-            <td style="padding: 15px; text-align: center; font-weight: 500;">${index + 1}</td>
-            <td style="padding: 15px; font-weight: 500;">
-                <div class="driver-name">${fullName}</div>
-                <div class="driver-id" style="font-size: 12px; color: #6b7280;">#${(driver.id || '').slice(-8).toUpperCase()}</div>
+            <td class="table-cell" style="width: 5%; text-align: center;">${index + 1}</td>
+            <td class="table-cell" style="width: 25%;">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <img src="${avatarUrl}" 
+                         alt="${fullName}" 
+                         class="driver-avatar-small"
+                         onerror="this.src='${fallbackUrl}'">
+                    <div>
+                        <div class="driver-name">${fullName}</div>
+                        <div class="driver-id">#${(driver.id || '').slice(-8).toUpperCase()}</div>
+                    </div>
+                </div>
             </td>
-            <td style="padding: 15px; color: #666;">
-                <div class="driver-email">${driver.email || 'N/A'}</div>
-            </td>
-            <td style="padding: 15px; color: #666;">
-                <div class="driver-phone">${driver.phone || 'N/A'}</div>
-            </td>
-            <td style="padding: 15px; text-align: center; color: #666;">
-                <div class="driver-age">${age}</div>
-            </td>
-            <td class="actions" style="padding: 15px; text-align: center;">
+            <td class="table-cell" style="width: 25%;">${driver.email || 'N/A'}</td>
+            <td class="table-cell" style="width: 15%;">${driver.phone || 'N/A'}</td>
+            <td class="table-cell" style="width: 10%; text-align: center;">${age}</td>
+            <td class="table-cell" style="width: 20%;">
                 <div class="action-buttons">
-                    <button class="btn-edit" onclick="window.editDriver('${driver.id}', '${driver.truckDefault.id}')" title="Edit Driver">
+                    <button class="btn-edit" onclick="window.editDriver('${driver.id}', '${driver.truckDefault.id}')">
                         <i class="fas fa-edit"></i> Edit
                     </button>
-                    <button class="btn-delete" onclick="window.confirmDelete('${driver.id}', '${fullName}')" title="Delete Driver">
+                    <button class="btn-delete" onclick="window.confirmDelete('${driver.id}', '${fullName}')">
                         <i class="fas fa-trash"></i> Delete
                     </button>
                 </div>
             </td>
         `;
-        
-        // Agregar efecto hover
-        row.addEventListener('mouseenter', () => {
-            row.style.backgroundColor = '#f8fafc';
-        });
-        
-        row.addEventListener('mouseleave', () => {
-            row.style.backgroundColor = '';
-        });
-        
+
         tableBody.appendChild(row);
     });
 }
@@ -381,5 +411,51 @@ style.textContent = `
         0% { transform: rotate(0deg); }
         100% { transform: rotate(360deg); }
     }
+    
+    .table-cell {
+        padding: 15px;
+        vertical-align: middle;
+        border-bottom: 1px solid #E5E7EB;
+    }
+    
+    .driver-avatar-small {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid #e5e7eb;
+        transition: transform 0.2s ease;
+    }
+    
+    .driver-row:hover .driver-avatar-small {
+        transform: scale(1.1);
+        border-color: #000080;
+    }
+     .driver-name {
+        font-weight: 500;
+        color: #111827;
+    }
+
+    .driver-id {
+        font-size: 12px;
+        color: #6B7280;
+    }
+
+    .drivers-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+
+    .drivers-table th {
+        padding: 15px;
+        text-align: left;
+        font-weight: 600;
+        color: #374151;
+        border-bottom: 2px solid #E5E7EB;
+    }
 `;
 document.head.appendChild(style);
+
+// Exportar las funciones para usar en otros componentes si es necesario
+export { getDriverAvatar, getDriverFallbackUrl };

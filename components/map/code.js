@@ -28,6 +28,39 @@ var truckIcons = {
     })
 };
 
+// Función para generar avatar consistente basado en ID
+function getDriverAvatar(driverId, driverName = '') {
+    if (!driverId) {
+        // Si no hay ID, usar un avatar por defecto consistente
+        return 'photos/drivers/default.jpg';
+    }
+    
+    // Primero intentar buscar foto local basada en el ID
+    const localPhotoUrl = `photos/drivers/${driverId}.jpg`;
+    
+    // Si no existe la foto local, usar foto generada consistente
+    // Generar un número consistente basado en el ID para seleccionar foto
+    const hash = hashCode(driverId);
+    const photoNumber = (hash % 100) + 1; // Números del 1 al 100
+    
+    const gender = hash % 2 === 0 ? 'men' : 'women';
+    
+    const fallbackUrl = `https://randomuser.me/api/portraits/${gender}/${photoNumber}.jpg`;
+    
+    return localPhotoUrl;
+}
+
+// Función para generar hash consistente del ID
+function hashCode(str) {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+        const char = str.charCodeAt(i);
+        hash = ((hash << 5) - hash) + char;
+        hash = hash & hash; 
+    }
+    return Math.abs(hash);
+}
+
 export function init(){
     console.log('Initializing truck map with Leaflet...');
     initializeMap();
@@ -38,40 +71,33 @@ function initializeMap() {
     const mapContainer = document.getElementById('map-container');
     if (!mapContainer) return;
     
-    // Limpiar el contenedor
     mapContainer.innerHTML = '';
     
-    // Inicializar el mapa primero
     map = L.map('map-container', {
         center: tijuana,
         zoom: 12,
         zoomControl: false
     });
     
-    // Añadir controles de zoom
     L.control.zoom({
         position: 'topright'
     }).addTo(map);
     
-    // Añadir capa de tiles
     L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
         subdomains: 'abcd',
         maxZoom: 19
     }).addTo(map);
     
-    // Añadir capa de marcadores después de que el mapa esté inicializado
     map.addLayer(markers);
     
-    // Cargar ubicaciones de camiones
     loadTruckLocations();
     
-    // Auto-actualización cada 30 segundos
     updateInterval = setInterval(loadTruckLocations, 30000);
 }
+
 async function loadTruckLocations() {
     try {
-        // Obtener lecturas y conductores en paralelo
         const [readingsResponse, drivers] = await Promise.all([
             getTruckReadings(),
             getDrivers()
@@ -95,7 +121,6 @@ async function loadTruckLocations() {
                 longitude: reading.location.longitude,
                 doorState: reading.doorState
             },
-            // Añadir información del conductor si existe
             driver: drivers.find(d => d.truckDefault?.id === reading.truck.id)
         }));
 
@@ -142,10 +167,14 @@ async function updateTruckMarkers(trucks) {
             truckId: truck.id
         });
         
-        // URL de avatar aleatorio basado en el ID del conductor para consistencia
-        const avatarUrl = driver 
-            ? `https://avatar.iran.liara.run/public?seed=${driver.id}`
-            : 'https://avatar.iran.liara.run/public';
+        // URL de avatar consistente basado en el ID del conductor
+        const avatarUrl = getDriverAvatar(driver?.id, firstName);
+        
+        // Generar URL de fallback para cuando la imagen local no exista
+        const hash = driver?.id ? hashCode(driver.id) : 0;
+        const photoNumber = (hash % 100) + 1;
+        const gender = hash % 2 === 0 ? 'men' : 'women';
+        const fallbackUrl = `https://randomuser.me/api/portraits/${gender}/${photoNumber}.jpg`;
         
         // Tooltip con información básica
         marker.bindTooltip(`
@@ -156,11 +185,13 @@ async function updateTruckMarkers(trucks) {
             </div>
         `);
         
-        // Popup con información detallada
         marker.bindPopup(`
             <div class="popup-header">
                 <div class="driver-profile">
-                    <img src="${avatarUrl}" alt="${firstName}" class="driver-avatar">
+                    <img src="${avatarUrl}" 
+                         alt="${firstName}" 
+                         class="driver-avatar"
+                         onerror="this.src='${fallbackUrl}'">
                     <span class="driver-name">${firstName}</span>
                 </div>
                 <div class="truck-plate">${truck.licensePlate}</div>
@@ -302,10 +333,12 @@ function focusOnTruck(truckId) {
     });
 }
 
-
 // Cleanup function
 window.addEventListener('beforeunload', () => {
     if (updateInterval) {
         clearInterval(updateInterval);
     }
 });
+
+// Exportar la función para usar en otros componentes si es necesario
+export { getDriverAvatar };

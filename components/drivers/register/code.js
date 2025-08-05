@@ -69,6 +69,7 @@ function setupEventListeners() {
     }
 }
 
+let currentDriverActive = true; 
 async function loadDriverData(driverId) {
     console.log('Loading driver data for ID:', driverId);
     try {
@@ -77,6 +78,7 @@ async function loadDriverData(driverId) {
         
         if (driver) {
             console.log('Driver data loaded:', driver);
+            currentDriverActive = driver.active ?? true;
             
             // Llenar el formulario con los datos del conductor
             document.getElementById('firstName').value = driver.name?.firstName || driver.firstName || '';
@@ -288,7 +290,8 @@ function handleFormSubmit(e) {
             email: formData.get('email').trim(),
             phone: formData.get('phone').trim(),
             birthDate: birthDateValue, // Formato "YYYY-MM-DD" como string
-            idTruckDefault: currentDriverTruckId
+            idTruckDefault: currentDriverTruckId,
+             active: currentDriverActive
         };
 
         console.log('Final update data (matching Swagger):', JSON.stringify(updateData, null, 2));
@@ -353,7 +356,7 @@ function handleFormSubmit(e) {
             .catch(error => {
                 console.error('Error in driver creation process:', error);
                 showAlert('Error creating driver: ' + error.message);
-                throw error; // Re-lanzamos el error para el finally
+                throw error; 
             })
             .finally(() => {
                 saveButton.classList.remove('loading');

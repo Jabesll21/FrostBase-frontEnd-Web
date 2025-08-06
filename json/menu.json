@@ -31,12 +31,6 @@
             "component": "components/orders"
         },
         {
-            "id": 1008,
-            "text": "Map",
-            "icon": "map",
-            "component": "components/map"
-        },
-        {
             "id": 1009,
             "text": "Routes",
             "icon": "route",

@@ -4,8 +4,13 @@ let map;
 let allRoutes = [];
 let filteredRoutes = [];
 let routeLayers = {};
+let truckMarkers = L.layerGroup();
 let selectedRouteId = null;
 let currentDay = -1; 
+let trucksVisible = true;
+let routesVisible = true;
+let trucksData = []; // Cache de camiones
+let driversData = []; // Cache de conductores
 
 const ROUTE_COLORS = [
     '#16a34a', '#dc2626', '#d97706', '#7c3aed', '#db2777',
@@ -17,20 +22,71 @@ const DAYS_MAP = {
     4: 'Thursday', 5: 'Friday', 6: 'Saturday'
 };
 
+// Iconos para camiones según su estado
+const truckIcons = {
+    'AV': L.divIcon({
+        className: 'truck-marker available',
+        html: '<i class="fas fa-truck"></i>',
+        iconSize: [30, 30]
+    }),
+    'IR': L.divIcon({
+        className: 'truck-marker in-route',
+        html: '<i class="fas fa-truck-moving"></i>',
+        iconSize: [30, 30]
+    }),
+    'IM': L.divIcon({
+        className: 'truck-marker maintenance',
+        html: '<i class="fas fa-truck-pickup"></i>',
+        iconSize: [30, 30]
+    }),
+    'OS': L.divIcon({
+        className: 'truck-marker out-of-service',
+        html: '<i class="fas fa-truck-monster"></i>',
+        iconSize: [30, 30]
+    })
+};
+
+// Función para generar avatar consistente basado en ID
+function getDriverAvatar(driverId, driverName = '') {
+    if (!driverId) {
+        return 'photos/drivers/default.jpg';
+    }
+    
+    // Primero intentar buscar foto local basada en el ID
+    const localPhotoUrl = `photos/drivers/${driverId}.jpg`;
+    
+    // Si no existe la foto local, usar foto generada consistente
+    const hash = hashCode(driverId);
+    const photoNumber = (hash % 100) + 1;
+    const gender = hash % 2 === 0 ? 'men' : 'women';
+    const fallbackUrl = `https://randomuser.me/api/portraits/${gender}/${photoNumber}.jpg`;
+    
+    return localPhotoUrl;
+}
+
+// Función para generar hash consistente del ID
+function hashCode(str) {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+        const char = str.charCodeAt(i);
+        hash = ((hash << 5) - hash) + char;
+        hash = hash & hash; 
+    }
+    return Math.abs(hash);
+}
+
 export function init() {
-    console.log('Initializing routes interface...');
+    console.log('Initializing integrated routes and map interface...');
     setupEventListeners();
     initializeMap();
-    loadRoutesData();
+    loadInitialData(); // Cambio aquí para optimizar la carga
     setTodayButton();
 }
 
 function setTodayButton() {
     const today = new Date().getDay();
-    const todayBtn = document.getElementById('today-btn');
+    const todayBtn = document.querySelector(`[data-day="${today}"]`);
     if (todayBtn) {
-        todayBtn.dataset.day = today;
-        todayBtn.textContent = DAYS_MAP[today];
         todayBtn.classList.add('active');
         currentDay = today;
     }
@@ -51,6 +107,7 @@ function setupEventListeners() {
 
     // Map controls
     document.getElementById('toggle-all-routes').addEventListener('click', toggleAllRoutes);
+    document.getElementById('toggle-trucks').addEventListener('click', toggleTrucks);
     document.getElementById('center-map').addEventListener('click', centerMap);
 
     // Search
@@ -80,17 +137,10 @@ function initializeMap() {
     }
 
     if (typeof L === 'undefined') {
-        console.error('Leaflet library not loaded. Please include Leaflet CSS and JS files.');
-        loadLeaflet().then(() => {
-            initializeMapAfterLeaflet();
-        });
+        console.error('Leaflet library not loaded');
         return;
     }
 
-    initializeMapAfterLeaflet();
-}
-
-function initializeMapAfterLeaflet() {
     const tijuana = [32.5027, -117.0382];
     
     try {
@@ -100,48 +150,21 @@ function initializeMapAfterLeaflet() {
             zoomControl: true
         });
 
-        // Add OpenStreetMap tile layer
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '© OpenStreetMap contributors',
             maxZoom: 18
         }).addTo(map);
 
+        // Agregar layer de camiones al mapa
+        map.addLayer(truckMarkers);
+
         console.log('Map initialized successfully');
-        
         addMapControls();
         
     } catch (error) {
         console.error('Error initializing map:', error);
         showMapError();
     }
-}
-
-async function loadLeaflet() {
-    return new Promise((resolve, reject) => {
-        if (!document.querySelector('link[href*="leaflet"]')) {
-            const cssLink = document.createElement('link');
-            cssLink.rel = 'stylesheet';
-            cssLink.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
-            document.head.appendChild(cssLink);
-        }
-
-        // Load Leaflet JS
-        if (!document.querySelector('script[src*="leaflet"]')) {
-            const script = document.createElement('script');
-            script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
-            script.onload = () => {
-                console.log('Leaflet loaded successfully');
-                resolve();
-            };
-            script.onerror = () => {
-                console.error('Failed to load Leaflet');
-                reject();
-            };
-            document.head.appendChild(script);
-        } else {
-            resolve();
-        }
-    });
 }
 
 function showMapError() {
@@ -162,11 +185,7 @@ function showMapError() {
 }
 
 function addMapControls() {
-    // Check if map is initialized
-    if (!map) {
-        console.warn('Map not initialized, skipping controls');
-        return;
-    }
+    if (!map) return;
 
     try {
         const routeControl = L.control({ position: 'topright' });
@@ -175,24 +194,23 @@ function addMapControls() {
             const div = L.DomUtil.create('div', 'leaflet-control-routes');
             div.innerHTML = `
                 <div class="route-control-panel" style="background: white; padding: 10px; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.3);">
-                    <h4 style="margin: 0 0 10px 0; font-size: 14px;">Route Controls</h4>
-                    <div class="route-toggle-buttons">
-                        <button id="show-all-routes" class="control-btn" style="padding: 5px 10px; margin: 2px; border: 1px solid #ccc; background: white; cursor: pointer; border-radius: 3px;">Show All</button>
-                        <button id="hide-all-routes" class="control-btn" style="padding: 5px 10px; margin: 2px; border: 1px solid #ccc; background: white; cursor: pointer; border-radius: 3px;">Hide All</button>
+                    <h4 style="margin: 0 0 10px 0; font-size: 14px;">Map Controls</h4>
+                    <div class="route-toggle-buttons" style="display: flex; flex-wrap: wrap; gap: 5px;">
+                        <button id="show-all-routes" class="control-btn" style="padding: 4px 8px; margin: 1px; border: 1px solid #ccc; background: white; cursor: pointer; border-radius: 3px; font-size: 11px;">Routes</button>
+                        <button id="show-trucks" class="control-btn" style="padding: 4px 8px; margin: 1px; border: 1px solid #ccc; background: white; cursor: pointer; border-radius: 3px; font-size: 11px;">Trucks</button>
                     </div>
                 </div>
             `;
             
             L.DomEvent.disableClickPropagation(div);
-            
             return div;
         };
         
         routeControl.addTo(map);
         
         setTimeout(() => {
-            document.getElementById('show-all-routes')?.addEventListener('click', showAllRoutes);
-            document.getElementById('hide-all-routes')?.addEventListener('click', hideAllRoutes);
+            document.getElementById('show-all-routes')?.addEventListener('click', toggleAllRoutes);
+            document.getElementById('show-trucks')?.addEventListener('click', toggleTrucks);
         }, 100);
         
     } catch (error) {
@@ -200,9 +218,30 @@ function addMapControls() {
     }
 }
 
-async function loadRoutesData() {
+// Función optimizada para cargar datos iniciales
+async function loadInitialData() {
     showLoading(true);
     
+    try {
+        console.log('Loading initial data...');
+        
+        // Cargar solo las rutas primero
+        await loadRoutesData();
+        
+        // Cargar camiones de forma asíncrona sin bloquear
+        setTimeout(() => {
+            loadTrucksDataAsync();
+        }, 500);
+        
+    } catch (error) {
+        console.error('Error loading initial data:', error);
+        showError('Failed to load data: ' + error.message);
+    } finally {
+        showLoading(false);
+    }
+}
+
+async function loadRoutesData() {
     try {
         console.log('Loading routes data for day:', currentDay);
         
@@ -213,8 +252,6 @@ async function loadRoutesData() {
             routes = await getRoutesByDay(currentDay);
         }
         
-        console.log('Routes API response:', routes);
-        
         allRoutes = routes.data || routes || [];
         filteredRoutes = [...allRoutes];
         
@@ -223,18 +260,173 @@ async function loadRoutesData() {
         updateStats();
         renderRoutesList();
         
-        if (map) {
+        if (map && routesVisible) {
             renderRoutesOnMap();
-        } else {
-            console.warn('Map not initialized, skipping map rendering');
         }
         
     } catch (error) {
         console.error('Error loading routes:', error);
-        showError('Failed to load routes data: ' + error.message);
-    } finally {
-        showLoading(false);
+        throw error;
     }
+}
+
+// Función asíncrona para cargar camiones sin bloquear
+async function loadTrucksDataAsync() {
+    try {
+        console.log('Loading truck data asynchronously...');
+        
+        // Importar dinámicamente las funciones del mapa
+        const { getTruckReadings, getDrivers: getMapDrivers } = await import('../map/services.js');
+        
+        const [readingsResponse, drivers] = await Promise.all([
+            getTruckReadings(),
+            getMapDrivers()
+        ]);
+        
+        // Guardar datos en cache
+        driversData = drivers;
+        
+        const latestReadings = getLatestReadings(readingsResponse.data);        
+        trucksData = latestReadings.map(reading => ({
+            id: reading.truck.id,
+            licensePlate: reading.truck.licensePlate,
+            brand: reading.truck.brand,
+            model: reading.truck.model,
+            state: { 
+                id: reading.truck.state.id,
+                message: reading.truck.state.description
+            },
+            lastReading: {
+                temperature: reading.temp,
+                humidity: reading.percHumidity,
+                date: reading.date,
+                latitude: reading.location.latitude,
+                longitude: reading.location.longitude,
+                doorState: reading.doorState
+            },
+            driver: drivers.find(d => d.truckDefault?.id === reading.truck.id)
+        }));
+
+        console.log('Trucks loaded:', trucksData.length);
+        
+        if (map && trucksVisible) {
+            renderTrucksOnMap();
+        }
+        
+    } catch (error) {
+        console.error('Error loading truck data:', error);
+        // No mostrar error aquí porque es carga asíncrona
+    }
+}
+
+function getLatestReadings(readings) {
+    const grouped = readings.reduce((acc, reading) => {
+        if (!acc[reading.truck.id] || new Date(reading.date) > new Date(acc[reading.truck.id].date)) {
+            acc[reading.truck.id] = reading;
+        }
+        return acc;
+    }, {});
+    
+    return Object.values(grouped);
+}
+
+function renderTrucksOnMap() {
+    if (!map || !trucksData.length) return;
+    
+    // Limpiar marcadores de camiones anteriores
+    truckMarkers.clearLayers();
+    
+    trucksData.forEach(truck => {
+        if (!truck.lastReading) return;
+        
+        const { latitude, longitude } = truck.lastReading;
+        if (!latitude || !longitude) return;
+        
+        // Encontrar la ruta asignada a este camión/conductor
+        const assignedRoute = findRouteForTruck(truck);
+        
+        const marker = L.marker([latitude, longitude], {
+            icon: truckIcons[truck.state?.id] || truckIcons['AV'],
+            truckId: truck.id
+        });
+        
+        const firstName = truck.driver?.name?.firstName || 'Unknown';
+        const routeName = assignedRoute ? assignedRoute.name : 'No Route Assigned';
+        const routeColor = assignedRoute ? getRouteColor(assignedRoute.id) : '#6b7280';
+        
+        // URL de avatar consistente basado en el ID del conductor
+        const avatarUrl = getDriverAvatar(truck.driver?.id, firstName);
+        
+        // Generar URL de fallback
+        const hash = truck.driver?.id ? hashCode(truck.driver.id) : 0;
+        const photoNumber = (hash % 100) + 1;
+        const gender = hash % 2 === 0 ? 'men' : 'women';
+        const fallbackUrl = `https://randomuser.me/api/portraits/${gender}/${photoNumber}.jpg`;
+        
+        // Popup con información del camión y ruta
+        marker.bindPopup(`
+            <div class="truck-popup">
+                <div class="popup-header">
+                    <div class="driver-profile">
+                        <img src="${avatarUrl}" 
+                             alt="${firstName}" 
+                             class="driver-avatar"
+                             onerror="this.src='${fallbackUrl}'">
+                        <div class="driver-info">
+                            <h4>${truck.licensePlate}</h4>
+                            <p><strong>Driver:</strong> ${firstName}</p>
+                        </div>
+                    </div>
+                    <p><strong>Route:</strong> <span style="color: ${routeColor};">${routeName}</span></p>
+                    <p><strong>Status:</strong> ${truck.state?.message}</p>
+                </div>
+                <div class="popup-content">
+                    <div class="sensor-readings">
+                        <div class="reading">
+                            <i class="fas fa-temperature-low"></i>
+                            <span>${truck.lastReading.temperature}°C</span>
+                        </div>
+                        <div class="reading">
+                            <i class="fas fa-tint"></i>
+                            <span>${truck.lastReading.humidity}%</span>
+                        </div>
+                        <div class="reading">
+                            <i class="fas fa-door-${truck.lastReading.doorState ? 'open' : 'closed'}"></i>
+                            <span>Door ${truck.lastReading.doorState ? 'Open' : 'Closed'}</span>
+                        </div>
+                    </div>
+                    <div class="last-update">
+                        <i class="fas fa-clock"></i>
+                        <span>${new Date(truck.lastReading.date).toLocaleString()}</span>
+                    </div>
+                </div>
+            </div>
+        `);
+        
+        marker.on('click', () => {
+            if (assignedRoute) {
+                selectRoute(assignedRoute.id);
+                highlightRouteOnMap(assignedRoute.id);
+            }
+        });
+        
+        truckMarkers.addLayer(marker);
+    });
+    
+    console.log('Trucks rendered on map:', trucksData.length);
+}
+
+function findRouteForTruck(truck) {
+    if (!truck.driver) return null;
+    
+    return allRoutes.find(route => {
+        return route.driver && route.driver.id === truck.driver.id;
+    });
+}
+
+function getRouteColor(routeId) {
+    const routeIndex = allRoutes.findIndex(route => route.id === routeId);
+    return routeIndex >= 0 ? ROUTE_COLORS[routeIndex % ROUTE_COLORS.length] : '#6b7280';
 }
 
 function updateStats() {
@@ -255,10 +447,16 @@ function updateStats() {
         }
     });
     
-    document.getElementById('total-routes').textContent = totalRoutes;
-    document.getElementById('active-routes').textContent = todayRoutes;
-    document.getElementById('total-stores').textContent = storesSet.size;
-    document.getElementById('assigned-drivers').textContent = driversSet.size;
+    // Verificar que los elementos existen antes de actualizar
+    const totalRoutesEl = document.getElementById('total-routes');
+    const activeRoutesEl = document.getElementById('active-routes');
+    const totalStoresEl = document.getElementById('total-stores');
+    const assignedDriversEl = document.getElementById('assigned-drivers');
+    
+    if (totalRoutesEl) totalRoutesEl.textContent = totalRoutes;
+    if (activeRoutesEl) activeRoutesEl.textContent = todayRoutes;
+    if (totalStoresEl) totalStoresEl.textContent = storesSet.size;
+    if (assignedDriversEl) assignedDriversEl.textContent = driversSet.size;
 }
 
 function renderRoutesList() {
@@ -295,9 +493,11 @@ function createRouteListItem(route) {
         return `<span class="day-tag ${isToday ? 'active-day' : ''}">${DAYS_MAP[day].substring(0, 3)}</span>`;
     }).join('') : '';
     
+    const routeColor = getRouteColor(route.id);
+    
     div.innerHTML = `
         <div class="route-header">
-            <div class="route-name">${route.name || 'Unnamed Route'}</div>
+            <div class="route-name" style="border-left: 4px solid ${routeColor}; padding-left: 8px;">${route.name || 'Unnamed Route'}</div>
             <div class="route-status ${isActiveToday ? 'active' : 'inactive'}">
                 ${isActiveToday ? 'Active' : 'Inactive'}
             </div>
@@ -341,20 +541,9 @@ function renderRoutesOnMap() {
 }
 
 function addRouteToMap(route, color) {
-    if (!map) {
-        console.warn('Map not initialized, cannot add route');
-        return;
-    }
-    
-    if (!route.stores || route.stores.length === 0) {
-        console.log('Route has no stores:', route.name);
-        return;
-    }
-    
-    console.log('Adding route to map:', route.name, 'with', route.stores.length, 'stores');
+    if (!map || !route.stores || route.stores.length === 0) return;
     
     const routeGroup = L.layerGroup();
-    const storeMarkers = [];
     const routeCoordinates = [];
     
     // Add store markers
@@ -364,13 +553,9 @@ function addRouteToMap(route, color) {
             const lat = parseFloat(store.location.latitude);
             const lng = parseFloat(store.location.longitude);
             
-            // Validate coordinates
             if (isNaN(lat) || isNaN(lng) || lat < -90 || lat > 90 || lng < -180 || lng > 180) {
-                console.warn('Invalid coordinates for store:', store.name, lat, lng);
                 return;
             }
-            
-            console.log('Adding store marker:', store.name, lat, lng);
             
             try {
                 const marker = L.circleMarker([lat, lng], {
@@ -382,10 +567,10 @@ function addRouteToMap(route, color) {
                     fillOpacity: 0.8
                 });
                 
-                // Add popup
                 marker.bindPopup(`
                     <div class="store-popup">
                         <h4>${store.name}</h4>
+                        <p><strong>Route:</strong> <span style="color: ${color};">${route.name}</span></p>
                         <p><strong>Sequence:</strong> ${storeData.sequence}</p>
                         <p><strong>Phone:</strong> ${store.phone || 'N/A'}</p>
                         <p><strong>Address:</strong> ${store.location.address || 'N/A'}</p>
@@ -393,14 +578,11 @@ function addRouteToMap(route, color) {
                 `);
                 
                 routeGroup.addLayer(marker);
-                storeMarkers.push(marker);
                 routeCoordinates.push([lat, lng]);
                 
             } catch (error) {
                 console.error('Error creating marker for store:', store.name, error);
             }
-        } else {
-            console.warn('Store missing location data:', store ? store.name : 'Unknown store');
         }
     });
     
@@ -414,7 +596,6 @@ function addRouteToMap(route, color) {
             });
             
             routeGroup.addLayer(routeLine);
-            console.log('Added route line with', routeCoordinates.length, 'points');
         } catch (error) {
             console.error('Error creating route line:', error);
         }
@@ -422,10 +603,9 @@ function addRouteToMap(route, color) {
     
     if (routeGroup.getLayers().length > 0) {
         routeLayers[route.id] = routeGroup;
-        routeGroup.addTo(map);
-        console.log('Route added successfully:', route.name);
-    } else {
-        console.warn('No valid markers created for route:', route.name);
+        if (routesVisible) {
+            routeGroup.addTo(map);
+        }
     }
 }
 
@@ -608,24 +788,22 @@ function filterRoutes(searchTerm) {
 }
 
 function toggleAllRoutes() {
-    const hasVisibleRoutes = Object.keys(routeLayers).length > 0;
+    routesVisible = !routesVisible;
     
-    if (hasVisibleRoutes) {
-        hideAllRoutes();
-    } else {
-        showAllRoutes();
-    }
-}
-
-function showAllRoutes() {
-    renderRoutesOnMap();
-}
-
-function hideAllRoutes() {
     Object.values(routeLayers).forEach(layer => {
-        map.removeLayer(layer);
+        if (routesVisible) {
+            map.addLayer(layer);
+        } else {
+            map.removeLayer(layer);
+        }
     });
-    routeLayers = {};
+    
+    const btn = document.getElementById('show-trucks');
+    if (btn) {
+        btn.textContent = trucksVisible ? 'Hide Trucks' : 'Show Trucks';
+        btn.style.background = trucksVisible ? '#000080' : 'white';
+        btn.style.color = trucksVisible ? 'white' : '#374151';
+    }
 }
 
 function centerMap() {
@@ -644,15 +822,14 @@ function showLoading(show) {
 }
 
 function showError(message) {
-    alert('Error: ' + message);
+    showToast(message, 'error');
 }
 
 function showSuccess(message) {
-    alert('Success: ' + message);
+    showToast(message, 'success');
 }
 
-//
-
+// Component loading function
 function loadComponent(component, params = {}) {
     try {
         console.log('Loading component:', component);
@@ -699,10 +876,103 @@ async function importModule(moduleUrl, params = {}) {
     }
 }
 
+function showToast(message, type = 'success') {
+    // Remove existing toasts
+    const existingToasts = document.querySelectorAll('.toast');
+    existingToasts.forEach(toast => toast.remove());
+    
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    
+    const icon = getToastIcon(type);
+    
+    toast.innerHTML = `
+        <div class="toast-content">
+            <i class="fas fa-${icon}" style="margin-right: 8px;"></i>
+            <span>${message}</span>
+        </div>
+    `;
+    
+    toast.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: ${getToastColor(type)};
+        color: white;
+        padding: 12px 24px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        z-index: 1000;
+        font-weight: 500;
+        font-size: 14px;
+        max-width: 400px;
+        animation: slideInRight 0.3s ease-out;
+    `;
+    
+    document.body.appendChild(toast);
+    
+    // Auto remove
+    const duration = type === 'info' ? 2000 : 3000;
+    setTimeout(() => {
+        if (toast.parentNode) {
+            toast.style.animation = 'slideOutRight 0.3s ease-in';
+            setTimeout(() => toast.remove(), 300);
+        }
+    }, duration);
+}
+
+function getToastIcon(type) {
+    switch(type) {
+        case 'success': return 'check-circle';
+        case 'error': return 'exclamation-circle';
+        case 'info': return 'info-circle';
+        case 'warning': return 'exclamation-triangle';
+        default: return 'info-circle';
+    }
+}
+
+function getToastColor(type) {
+    switch(type) {
+        case 'success': return '#16a34a';
+        case 'error': return '#dc2626';
+        case 'info': return '#3b82f6';
+        case 'warning': return '#d97706';
+        default: return '#6b7280';
+    }
+}
+
 // Export functions that might be needed externally
 export {
     loadRoutesData,
     selectRoute,
     showRouteDetails,
-    filterRoutes
-};
+    filterRoutes,
+    toggleTrucks,
+    toggleAllRoutes,
+    loadInitialData,
+    renderTrucksOnMap
+}
+
+
+// Mover la función toggleTrucks fuera de la exportación:
+function toggleTrucks() {
+    trucksVisible = !trucksVisible;
+    
+    if (trucksVisible) {
+        map.addLayer(truckMarkers);
+        if (trucksData.length === 0) {
+            loadTrucksDataAsync();
+        } else {
+            renderTrucksOnMap();
+        }
+    } else {
+        map.removeLayer(truckMarkers);
+    }
+    
+    const btn = document.getElementById('show-trucks');
+    if (btn) {
+        btn.textContent = trucksVisible ? 'Hide Trucks' : 'Show Trucks';
+        btn.style.background = trucksVisible ? '#000080' : 'white';
+        btn.style.color = trucksVisible ? 'white' : '#374151';
+    }
+}

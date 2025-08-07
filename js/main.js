@@ -11,6 +11,7 @@ function init() {
     document.getElementById('icon-side-menu').addEventListener('click', () => {
         toggleSideMenu();
     })
+    toggleSideMenu()
     showSideMenu(); //show side menu
     loadComponent('components\\map'); //show component at start
 }

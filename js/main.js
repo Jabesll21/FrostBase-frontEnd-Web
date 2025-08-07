@@ -24,11 +24,11 @@ export function toggleSideMenu(){
     sideMenuVisible = !sideMenuVisible;
     //is sideMenuVisible
     if (sideMenuVisible) {
-        document.getElementById('side-menu').style.display = 'block';
+        document.getElementById('side-menu').classList.add('visible');
         document.body.classList.add('menu-visible');
     }
     else{
-        document.getElementById('side-menu').style.display = 'none';
+        document.getElementById('side-menu').classList.remove('visible');
         document.body.classList.remove('menu-visible');
     }
 }

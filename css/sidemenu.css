@@ -1,13 +1,19 @@
 #side-menu{
     position: fixed;
-    left: 0;
     top: 40px;
     width: 150px;
     background: var(--headerBackground);
     height: calc(100vh - 40px);
     color: var(--lightText);
-    display: none;
     z-index: 1000;
+    left: -150px;
+    transition: left 0.3s ease;
+    visibility: hidden;
+}
+
+#side-menu.visible {
+    left: 0;
+    visibility: visible;
 }
 .side-menu-option{
     display: flex;

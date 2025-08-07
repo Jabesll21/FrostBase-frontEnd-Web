@@ -11,6 +11,7 @@ let trucksVisible = true;
 let routesVisible = true;
 let trucksData = []; // Cache de camiones
 let driversData = []; // Cache de conductores
+let updateInterval = null; // Intervalo para actualizar los datos de camiones
 
 const ROUTE_COLORS = [
     '#16a34a', '#dc2626', '#d97706', '#7c3aed', '#db2777',
@@ -86,6 +87,14 @@ export function init() {
     initializeMap();
     loadInitialData(); // Cambio aquí para optimizar la carga
     setTodayButton();
+
+    // Limpiar el intervalo cuando se descarga la página
+    window.addEventListener('unload', function() {
+        if (updateInterval) {
+            clearInterval(updateInterval);
+            updateInterval = null;
+        }
+    });
 }
 
 function setTodayButton() {
@@ -987,13 +996,17 @@ function toggleTrucks() {
     
     if (trucksVisible) {
         map.addLayer(truckMarkers);
-        if (trucksData.length === 0) {
-            loadTrucksDataAsync();
-        } else {
-            renderTrucksOnMap();
-        }
+        // Cargar datos inmediatamente
+        loadTrucksDataAsync();
+        // Iniciar el intervalo de actualización
+        updateInterval = setInterval(loadTrucksDataAsync, 5000);
     } else {
         map.removeLayer(truckMarkers);
+        // Detener el intervalo cuando se ocultan los camiones
+        if (updateInterval) {
+            clearInterval(updateInterval);
+            updateInterval = null;
+        }
     }
     
     const btn = document.getElementById('show-trucks');

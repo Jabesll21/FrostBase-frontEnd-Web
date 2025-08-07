@@ -1,11 +1,13 @@
 #side-menu{
-    position: relative;
-    float: left;
+    position: fixed;
+    left: 0;
+    top: 40px;
     width: 150px;
     background: var(--headerBackground);
     height: calc(100vh - 40px);
     color: var(--lightText);
     display: none;
+    z-index: 1000;
 }
 .side-menu-option{
     display: flex;

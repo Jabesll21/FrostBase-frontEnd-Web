@@ -1,4 +1,4 @@
-import { getRoutes, getTodayRoutes, getRoutesByDay, deleteRoute, getDrivers, getStores } from './services.js';
+import { getRoutes, getRoutesByDay, deleteRoute } from './services.js';
 
 let map;
 let allRoutes = [];
@@ -21,6 +21,11 @@ const DAYS_MAP = {
     0: 'Sunday', 1: 'Monday', 2: 'Tuesday', 3: 'Wednesday',
     4: 'Thursday', 5: 'Friday', 6: 'Saturday'
 };
+const baseIcon = L.divIcon({
+    className: 'truck-marker base',
+    html: '<i class="fas fa-warehouse"></i>',
+    iconSize: [30, 30]
+});
 
 // Iconos para camiones según su estado
 const truckIcons = {
@@ -534,6 +539,19 @@ function renderRoutesOnMap() {
     });
     routeLayers = {};
     
+    // Agregar el marcador con el baseIcon
+    const baseMarker = L.marker([32.45900929216648, -116.97966765227373], {
+        icon: baseIcon
+    }).addTo(map);
+    
+    // Agregar un popup al marcador base
+    baseMarker.bindPopup(`
+        <div class="base-popup">
+            <h4>Grupo Lala - Pacifico</h4>
+            <p>Centro de distribución principal</p>
+        </div>
+    `);
+
     filteredRoutes.forEach((route, index) => {
         const color = ROUTE_COLORS[index % ROUTE_COLORS.length];
         addRouteToMap(route, color);
@@ -544,7 +562,6 @@ function addRouteToMap(route, color) {
     if (!map || !route.stores || route.stores.length === 0) return;
     
     const routeGroup = L.layerGroup();
-    const routeCoordinates = [];
     
     // Add store markers
     route.stores.forEach((storeData, index) => {
@@ -578,26 +595,36 @@ function addRouteToMap(route, color) {
                 `);
                 
                 routeGroup.addLayer(marker);
-                routeCoordinates.push([lat, lng]);
-                
             } catch (error) {
                 console.error('Error creating marker for store:', store.name, error);
             }
         }
     });
     
-    if (routeCoordinates.length > 1) {
+    // Add route line using waypoints
+    if (route.waypoints && route.waypoints.length > 1) {
         try {
-            const routeLine = L.polyline(routeCoordinates, {
-                color: color,
-                weight: 3,
-                opacity: 0.7,
-                dashArray: '10, 5'
-            });
+            const waypointCoordinates = route.waypoints.map(point => [
+                parseFloat(point.latitude),
+                parseFloat(point.longitude)
+            ]).filter(coord => 
+                !isNaN(coord[0]) && !isNaN(coord[1]) &&
+                coord[0] >= -90 && coord[0] <= 90 &&
+                coord[1] >= -180 && coord[1] <= 180
+            );
             
-            routeGroup.addLayer(routeLine);
+            if (waypointCoordinates.length > 1) {
+                const routeLine = L.polyline(waypointCoordinates, {
+                    color: color,
+                    weight: 3,
+                    opacity: 0.7,
+                    dashArray: '10, 5'
+                });
+                
+                routeGroup.addLayer(routeLine);
+            }
         } catch (error) {
-            console.error('Error creating route line:', error);
+            console.error('Error creating route line from waypoints:', error);
         }
     }
     

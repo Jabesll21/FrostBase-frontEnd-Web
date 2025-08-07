@@ -553,7 +553,8 @@ function renderRoutesOnMap() {
     
     // Agregar el marcador con el baseIcon
     const baseMarker = L.marker([32.45900929216648, -116.97966765227373], {
-        icon: baseIcon
+        icon: baseIcon,
+        zIndexOffset: 1000 // Esto asegura que esté por encima de otros marcadores
     }).addTo(map);
     
     // Agregar un popup al marcador base

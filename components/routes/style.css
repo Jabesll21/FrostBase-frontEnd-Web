@@ -141,7 +141,7 @@
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
     display: flex;
     flex-direction: column;
-    height: 380px;
+    height: 500px;
 }
 
 .map-header {
@@ -187,54 +187,147 @@
     border-radius: 10px;
     background: #f8fafc;
     position: relative;
-    min-height: 340px;
+    min-height: 450px;
 }
 
-/* Map Legend */
-.map-legend {
-    margin-top: 15px;
-    padding: 15px;
-    background: #f8fafc;
-    border-radius: 8px;
+/* Estilos para el mapa Leaflet */
+#routes-map {
+    width: 100%;
+    height: 100%;
+    background: #f5f5f5;
+    border-radius: 10px;
 }
 
-.legend-title {
+/* Estilos para los marcadores de camiones */
+.truck-marker {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    color: white;
     font-size: 14px;
-    font-weight: 600;
-    color: #374151;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    border: 2px solid white;
+    transition: all 0.3s ease;
+}
+
+.truck-marker:hover {
+    transform: scale(1.1);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.4);
+}
+
+.truck-marker.available {
+    background-color: #4CAF50;
+}
+
+.truck-marker.in-route {
+    background-color: #2196F3;
+}
+
+.truck-marker.maintenance {
+    background-color: #FF9800;
+}
+
+.truck-marker.out-of-service {
+    background-color: #F44336;
+}
+
+/* Estilos para los popups */
+.truck-popup {
+    font-family: Arial, sans-serif;
+    min-width: 220px;
+}
+
+.truck-popup .popup-header {
+    margin-bottom: 10px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.driver-profile {
+    display: flex;
+    align-items: center;
     margin-bottom: 10px;
 }
 
-.legend-items {
-    display: flex;
-    gap: 15px;
-    flex-wrap: wrap;
-}
-
-.legend-item {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 12px;
-    color: #6b7280;
-}
-
-.legend-color {
-    width: 12px;
-    height: 12px;
+.driver-avatar {
+    width: 50px;
+    height: 50px;
     border-radius: 50%;
+    object-fit: cover;
+    margin-right: 12px;
+    border: 2px solid #ddd;
+    flex-shrink: 0;
 }
 
-.legend-color.route-active {
-    background: #16a34a;
+.driver-info h4 {
+    margin: 0 0 4px 0;
+    color: #000080;
+    font-size: 1.1em;
+    font-weight: bold;
 }
 
-.legend-color.route-inactive {
-    background: #6b7280;
+.driver-info p {
+    margin: 0;
+    font-size: 13px;
+    color: #374151;
 }
 
-.legend-color.store-marker {
-    background: #dc2626;
+.truck-popup h4 {
+    margin: 0 0 8px 0;
+    color: #000080;
+    font-size: 1.1em;
+    font-weight: bold;
+}
+
+.truck-popup p {
+    margin: 3px 0;
+    font-size: 13px;
+    color: #374151;
+}
+
+.sensor-readings {
+    display: flex;
+    justify-content: space-between;
+    margin: 10px 0;
+    padding: 8px;
+    background: #f8fafc;
+    border-radius: 6px;
+}
+
+.reading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-size: 0.85em;
+}
+
+.reading i {
+    font-size: 1.2em;
+    margin-bottom: 4px;
+    color: #555;
+}
+
+.last-update {
+    font-size: 0.75em;
+    color: #6b7280;
+    text-align: center;
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid #e5e7eb;
+}
+
+.store-popup h4 {
+    margin: 0 0 8px 0;
+    color: #000080;
+    font-size: 1.1em;
+    font-weight: bold;
+}
+
+.store-popup p {
+    margin: 3px 0;
+    font-size: 13px;
+    color: #374151;
 }
 
 /* Routes List Section */
@@ -245,7 +338,7 @@
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
     display: flex;
     flex-direction: column;
-    height: 380px;
+    height: 500px;
 }
 
 .routes-list-header {
@@ -466,6 +559,69 @@
     background: #b91c1c;
 }
 
+/* Detail Grid for Modal */
+.detail-section {
+    margin-bottom: 20px;
+}
+
+.detail-section h4 {
+    color: #000080;
+    margin-bottom: 15px;
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.detail-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.detail-item {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.detail-item label {
+    font-weight: 600;
+    color: #374151;
+    font-size: 14px;
+}
+
+.detail-item span {
+    color: #6b7280;
+    font-size: 14px;
+}
+
+.stores-table-container {
+    overflow-x: auto;
+}
+
+.stores-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+
+.stores-table th,
+.stores-table td {
+    padding: 8px 12px;
+    text-align: left;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.stores-table th {
+    background: #f8fafc;
+    font-weight: 600;
+    color: #374151;
+}
+
+.stores-table td {
+    color: #6b7280;
+}
+
 /* Loading Overlay */
 .loading-overlay {
     position: fixed;
@@ -510,6 +666,37 @@
     margin: 0;
 }
 
+/* Toast Animations */
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideOutRight {
+    from {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+}
+
+/* No routes message */
+.no-routes {
+    text-align: center;
+    color: #6b7280;
+    padding: 40px 20px;
+    font-style: italic;
+}
+
 /* Responsive Design */
 @media (max-width: 1200px) {
     .main-layout {
@@ -518,6 +705,10 @@
     }
     
     .routes-list-section {
+        height: 400px;
+    }
+    
+    .map-section {
         height: 400px;
     }
 }
@@ -558,5 +749,14 @@
 
     .search-input {
         width: 100%;
+    }
+
+    .detail-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .map-section,
+    .routes-list-section {
+        height: 300px;
     }
 }

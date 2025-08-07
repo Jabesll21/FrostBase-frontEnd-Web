@@ -12,7 +12,7 @@ let currentFilters = {
 };
 
 export function init() {
-    console.log('Initializing monitoring component...');
+    console.log('Initializing enhanced monitoring component...');
     setupEventListeners();
     loadInitialData();
 }
@@ -21,11 +21,6 @@ function setupEventListeners() {
     // Refresh button
     document.getElementById('refresh-button').addEventListener('click', () => {
         loadInitialData();
-    });
-
-    // Export button
-    document.getElementById('export-button').addEventListener('click', () => {
-        exportData();
     });
 
     // Date range filter
@@ -58,6 +53,21 @@ function setupEventListeners() {
             
             // Update chart
             updateChart(chart, view);
+        });
+    });
+
+    // Fleet chart control buttons
+    document.querySelectorAll('.fleet-chart-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const view = e.target.dataset.view;
+            
+            // Update active state
+            const chartBtns = e.target.parentElement.querySelectorAll('.fleet-chart-btn');
+            chartBtns.forEach(b => b.classList.remove('active'));
+            e.target.classList.add('active');
+            
+            // Update fleet chart
+            updateFleetChart(view);
         });
     });
 
@@ -98,6 +108,9 @@ async function loadInitialData() {
         // Populate truck filter
         populateTruckFilter();
 
+        // Update fleet KPIs
+        updateFleetKPIs();
+
         // Apply initial filters and update UI
         applyFilters();
 
@@ -106,6 +119,61 @@ async function loadInitialData() {
         showError('Error loading monitoring data. Please try again.');
     } finally {
         showLoading(false);
+    }
+}
+
+function updateFleetKPIs() {
+    const total = trucks.length;
+    const available = trucks.filter(truck => truck.state?.id === 'AV').length;
+    const inUse = trucks.filter(truck => truck.state?.id === 'IR').length;
+    const inMaintenance = trucks.filter(truck => truck.state?.id === 'IM').length;
+    const outOfService = trucks.filter(truck => truck.state?.id === 'OS').length;
+
+    // Update Fleet KPIs
+    document.getElementById('fleet-total').textContent = total;
+    document.getElementById('fleet-available').textContent = available;
+    document.getElementById('fleet-in-use').textContent = inUse;
+    document.getElementById('fleet-maintenance').textContent = inMaintenance;
+    document.getElementById('fleet-out-service').textContent = outOfService;
+
+    // Add visual indicators for critical states
+    updateFleetKPIStyles(available, inUse, inMaintenance, outOfService, total);
+    
+    // Update fleet chart
+    updateFleetChart('donut');
+}
+
+function updateFleetKPIStyles(available, inUse, inMaintenance, outOfService, total) {
+    // Reset styles
+    const cards = document.querySelectorAll('.fleet-kpi-card');
+    cards.forEach(card => {
+        card.classList.remove('critical', 'warning');
+    });
+
+    if (total === 0) return;
+
+    // Apply warning/critical styles based on fleet status
+    const totalActive = available + inUse;
+    const totalProblematic = inMaintenance + outOfService;
+
+    // Critical: More problematic trucks than active ones
+    if (totalProblematic > totalActive) {
+        document.querySelector('.fleet-kpi-card.maintenance').classList.add('critical');
+        document.querySelector('.fleet-kpi-card.out-of-service').classList.add('critical');
+    } else if (inMaintenance > total * 0.3) { // Warning: More than 30% in maintenance
+        document.querySelector('.fleet-kpi-card.maintenance').classList.add('warning');
+    }
+
+    // Available trucks status
+    if (available === 0) {
+        document.querySelector('.fleet-kpi-card.available').classList.add('critical');
+    } else if (available < total * 0.2) { // Warning: Less than 20% available
+        document.querySelector('.fleet-kpi-card.available').classList.add('warning');
+    }
+
+    // Out of service status
+    if (outOfService > total * 0.2) { // Warning: More than 20% out of service
+        document.querySelector('.fleet-kpi-card.out-of-service').classList.add('warning');
     }
 }
 
@@ -119,6 +187,121 @@ function populateTruckFilter() {
         option.textContent = `${truck.licensePlate} - ${truck.brand} ${truck.model}`;
         truckSelect.appendChild(option);
     });
+}
+
+function updateFleetChart(view) {
+    const chartElement = document.getElementById('fleet-status-chart');
+    
+    if (trucks.length === 0) {
+        chartElement.innerHTML = '<div style="display: flex; align-items: center; justify-content: center; height: 100%; color: #6b7280;">No fleet data available</div>';
+        return;
+    }
+
+    const available = trucks.filter(truck => truck.state?.id === 'AV').length;
+    const inUse = trucks.filter(truck => truck.state?.id === 'IR').length;
+    const inMaintenance = trucks.filter(truck => truck.state?.id === 'IM').length;
+    const outOfService = trucks.filter(truck => truck.state?.id === 'OS').length;
+
+    switch (view) {
+        case 'donut':
+            renderFleetDonutChart(chartElement, available, inUse, inMaintenance, outOfService);
+            break;
+        case 'bar':
+            renderFleetBarChart(chartElement, available, inUse, inMaintenance, outOfService);
+            break;
+    }
+}
+
+function renderFleetDonutChart(element, available, inUse, inMaintenance, outOfService) {
+    const total = available + inUse + inMaintenance + outOfService;
+    const data = [
+        { label: 'Available', value: available, color: '#16a34a' },
+        { label: 'In Use', value: inUse, color: '#dc2626' },
+        { label: 'Maintenance', value: inMaintenance, color: '#d97706' },
+        { label: 'Out of Service', value: outOfService, color: '#6b7280' }
+    ].filter(item => item.value > 0);
+
+    let cumulativePercentage = 0;
+    const radius = 80;
+    const innerRadius = 50;
+    const centerX = 120;
+    const centerY = 120;
+
+    element.innerHTML = `
+        <div style="height: 100%; display: flex; align-items: center; justify-content: space-between; padding: 20px;">
+            <div style="position: relative;">
+                <svg width="240" height="240" style="transform: rotate(-90deg);">
+                    <circle cx="${centerX}" cy="${centerY}" r="${radius}" fill="none" stroke="#e5e7eb" stroke-width="60"/>
+                    ${data.map(item => {
+                        const percentage = item.value / total;
+                        const strokeDasharray = 2 * Math.PI * radius;
+                        const strokeDashoffset = strokeDasharray * (1 - percentage);
+                        const rotation = cumulativePercentage * 360;
+                        
+                        const result = `
+                            <circle cx="${centerX}" cy="${centerY}" r="${radius}" 
+                                    fill="none" stroke="${item.color}" stroke-width="30"
+                                    stroke-dasharray="${strokeDasharray}"
+                                    stroke-dashoffset="${strokeDashoffset}"
+                                    style="transform-origin: ${centerX}px ${centerY}px; transform: rotate(${rotation}deg);"
+                                    opacity="0.9"/>
+                        `;
+                        
+                        cumulativePercentage += percentage;
+                        return result;
+                    }).join('')}
+                </svg>
+                <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center;">
+                    <div style="font-size: 32px; font-weight: bold; color: #000080;">${total}</div>
+                    <div style="font-size: 12px; color: #6b7280; text-transform: uppercase;">Total Trucks</div>
+                </div>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 15px; margin-left: 40px;">
+                ${data.map(item => `
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <div style="width: 16px; height: 16px; border-radius: 50%; background: ${item.color};"></div>
+                        <div style="display: flex; flex-direction: column;">
+                            <span style="font-size: 14px; font-weight: 600; color: #374151;">${item.label}</span>
+                            <span style="font-size: 20px; font-weight: 700; color: ${item.color};">${item.value}</span>
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+        </div>
+    `;
+}
+
+function renderFleetBarChart(element, available, inUse, inMaintenance, outOfService) {
+    const data = [
+        { label: 'Available', value: available, color: '#16a34a' },
+        { label: 'In Use', value: inUse, color: '#dc2626' },
+        { label: 'Maintenance', value: inMaintenance, color: '#d97706' },
+        { label: 'Out of Service', value: outOfService, color: '#6b7280' }
+    ];
+
+    const maxValue = Math.max(...data.map(d => d.value));
+    const maxHeight = 180;
+
+    element.innerHTML = `
+        <div style="height: 100%; display: flex; flex-direction: column; padding: 20px;">
+            <div style="flex: 1; display: flex; align-items: end; justify-content: space-around; gap: 20px; margin-bottom: 20px;">
+                ${data.map(item => `
+                    <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; min-width: 80px;">
+                        <div style="font-size: 18px; font-weight: bold; color: ${item.color};">${item.value}</div>
+                        <div style="
+                            width: 60px; 
+                            height: ${maxValue > 0 ? (item.value / maxValue) * maxHeight : 5}px; 
+                            background: linear-gradient(to top, ${item.color}, ${item.color}88);
+                            border-radius: 6px 6px 0 0;
+                            transition: all 0.3s ease;
+                            box-shadow: 0 2px 8px ${item.color}33;
+                        "></div>
+                        <div style="font-size: 12px; color: #6b7280; text-align: center; font-weight: 500;">${item.label}</div>
+                    </div>
+                `).join('')}
+            </div>
+        </div>
+    `;
 }
 
 function applyFilters() {
@@ -178,7 +361,11 @@ function filterReadings(readings) {
 
     // Truck filter
     if (currentFilters.truckId !== 'all') {
-        filtered = filtered.filter(reading => reading.idTruck === currentFilters.truckId);
+        filtered = filtered.filter(reading => {
+            // Check both possible truck ID fields
+            return reading.idTruck === currentFilters.truckId || 
+                   reading.truck?.id === currentFilters.truckId;
+        });
     }
 
     return filtered;
@@ -267,7 +454,6 @@ function updateChart(type, view) {
 function renderTrendChart(element, type) {
     const field = type === 'temp' ? 'temp' : 'percHumidity';
     const unit = type === 'temp' ? '°C' : '%';
-    const color = type === 'temp' ? '#ff6b6b' : '#4ecdc4';
     
     // Group data by hour for better visualization
     const hourlyData = groupDataByHour(filteredReadings, field);
@@ -398,13 +584,21 @@ function updateTable() {
     const limitedReadings = sortedReadings.slice(0, 100);
     
     tbody.innerHTML = limitedReadings.map(reading => {
-        const truck = trucks.find(t => t.id === reading.idTruck);
+        // Fix truck data access - check both possible structures
+        const truck = trucks.find(t => t.id === reading.idTruck) || 
+                     trucks.find(t => t.id === reading.truck?.id) || 
+                     reading.truck;
+        
         const temp = reading.temp || reading.temperature;
         const humidity = reading.percHumidity || reading.humidity;
         const tempStatus = getReadingStatus(temp, 'temp');
         const humidityStatus = getReadingStatus(humidity, 'humidity');
         const overallStatus = tempStatus === 'critical' || humidityStatus === 'critical' ? 'critical' :
                             tempStatus === 'warning' || humidityStatus === 'warning' ? 'warning' : 'normal';
+        
+        // Fix location access
+        const latitude = reading.latitude || reading.location?.latitude;
+        const longitude = reading.longitude || reading.location?.longitude;
         
         return `
             <tr>
@@ -423,7 +617,7 @@ function updateTable() {
                 <td>
                     <span class="status-badge ${overallStatus}">${overallStatus}</span>
                 </td>
-                <td>${formatLocation(reading.latitude, reading.longitude)}</td>
+                <td>${formatLocation(latitude, longitude)}</td>
                 <td>
                     <div class="action-buttons">
                         <button class="action-btn btn-view" onclick="viewReadingDetails('${reading.id}')">View</button>
@@ -569,55 +763,23 @@ function showError(message) {
     alert(message); // Replace with proper toast notification
 }
 
-function exportData() {
-    if (filteredReadings.length === 0) {
-        alert('No data to export');
-        return;
-    }
-    
-    // Create CSV content
-    const headers = ['Timestamp', 'Truck', 'Temperature (°C)', 'Humidity (%)', 'Status', 'Latitude', 'Longitude'];
-    const csvContent = [
-        headers.join(','),
-        ...filteredReadings.map(reading => {
-            const truck = trucks.find(t => t.id === reading.idTruck);
-            const temp = reading.temp || reading.temperature;
-            const humidity = reading.percHumidity || reading.humidity;
-            const status = getReadingStatus(temp, 'temp') === 'normal' && getReadingStatus(humidity, 'humidity') === 'normal' ? 'Normal' : 'Alert';
-            
-            return [
-                formatDateTime(reading.date),
-                truck?.licensePlate || 'Unknown',
-                temp?.toFixed(1) || 'N/A',
-                humidity?.toFixed(1) || 'N/A',
-                status,
-                reading.latitude || 'N/A',
-                reading.longitude || 'N/A'
-            ].join(',');
-        })
-    ].join('\n');
-    
-    // Download CSV
-    const blob = new Blob([csvContent], { type: 'text/csv' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `monitoring-data-${new Date().toISOString().split('T')[0]}.csv`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    window.URL.revokeObjectURL(url);
-}
-
 // Global functions for table actions
 window.viewReadingDetails = function(readingId) {
     const reading = allReadings.find(r => r.id === readingId);
     if (reading) {
-        const truck = trucks.find(t => t.id === reading.idTruck);
+        // Fix truck data access
+        const truck = trucks.find(t => t.id === reading.idTruck) || 
+                     trucks.find(t => t.id === reading.truck?.id) || 
+                     reading.truck;
+        
         const temp = reading.temp || reading.temperature;
         const humidity = reading.percHumidity || reading.humidity;
         
-        alert(`Reading Details:\n\nTruck: ${truck?.licensePlate || 'Unknown'}\nTimestamp: ${formatDateTime(reading.date)}\nTemperature: ${temp?.toFixed(1) || 'N/A'}°C\nHumidity: ${humidity?.toFixed(1) || 'N/A'}%\nLocation: ${formatLocation(reading.latitude, reading.longitude)}\nDoor State: ${reading.door_state ? 'Open' : 'Closed'}`);
+        // Fix location access
+        const latitude = reading.latitude || reading.location?.latitude;
+        const longitude = reading.longitude || reading.location?.longitude;
+        
+        alert(`Reading Details:\n\nTruck: ${truck?.licensePlate || 'Unknown'}\nTimestamp: ${formatDateTime(reading.date)}\nTemperature: ${temp?.toFixed(1) || 'N/A'}°C\nHumidity: ${humidity?.toFixed(1) || 'N/A'}%\nLocation: ${formatLocation(latitude, longitude)}\nDoor State: ${reading.doorState || reading.door_state ? 'Open' : 'Closed'}`);
     }
 };
 

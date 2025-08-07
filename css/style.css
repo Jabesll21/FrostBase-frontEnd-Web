@@ -16,6 +16,14 @@ h1 {
     position: relative;
     float: left;
     width: 100%;
+    margin-top: 40px;
+    transition: margin-left 0.3s ease;
+}
+
+/* Clase para cuando el menú está visible */
+body.menu-visible #content {
+    width: calc(100% - 150px);
+    margin-left: 150px;
 }
 .content{
     display: flex;

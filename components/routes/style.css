@@ -232,6 +232,10 @@
     background-color: #F44336;
 }
 
+.truck-marker.base {
+    background-color: #00b8c5;
+}
+
 /* Estilos para los popups */
 .truck-popup {
     font-family: Arial, sans-serif;

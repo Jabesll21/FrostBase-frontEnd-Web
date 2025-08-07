@@ -32,12 +32,19 @@
         },
         {
             "id": 1009,
+            "text": "Routes",
+            "icon": "route",
+            "component": "components/routes"
+
+        },
+        {
+            "id": 1010,
             "text": "Settings",
             "icon": "wrench",
             "component": "components/settings"
         },
         {
-            "id": 1010,
+            "id": 1011,
             "text": "Log out",
             "icon": "door-open",
             "component": "components/logout"

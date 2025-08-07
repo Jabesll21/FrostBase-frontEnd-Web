@@ -2,8 +2,27 @@ import { config } from '../../js/config.js'
 
 export async function getTruckReadings() {
     try {
-        const url = config.api.url + "Reading";
+        const url = config.api.url + "Reading/Truck";
         console.log('Fetching truck readings from:', url);
+        
+        const response = await fetch(url);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const result = await response.json();
+        console.log('Truck readings response:', result);
+        
+        return result;
+    } catch (error) {
+        console.error('Error fetching truck readings:', error);
+        throw error;
+    }
+}
+export async function getLatestTruckReadings() {
+    try {
+        const url = config.api.url + "Reading/Truck/Latest";
+        console.log('Fetching latest truck readings from:', url);
         
         const response = await fetch(url);
         if (!response.ok) {

@@ -37,6 +37,12 @@
             "component": "components/map"
         },
         {
+            "id": 1009,
+            "text": "Settings",
+            "icon": "wrench",
+            "component": "components/settings"
+        },
+        {
             "id": 1010,
             "text": "Log out",
             "icon": "door-open",

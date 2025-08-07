@@ -1,5 +1,5 @@
 export function init() {
-    fetch('/api/parameter')
+    fetch('http://localhost:5125/api/parameter')
         .then(res => res.json())
         .then(data => {
             const param = data.data || {};
@@ -22,8 +22,8 @@ export function init() {
             maxHumidity: parseInt(document.getElementById('maxHum').value),
             minHumidity: parseInt(document.getElementById('minHum').value)
         };
-        fetch('/api/parameter', {
-            method: 'POST',
+        fetch('http://localhost:5125/api/parameter', {
+            method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(settings)
         })

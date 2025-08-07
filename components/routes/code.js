@@ -281,18 +281,18 @@ async function loadTrucksDataAsync() {
         console.log('Loading truck data asynchronously...');
         
         // Importar dinámicamente las funciones del mapa
-        const { getTruckReadings, getDrivers: getMapDrivers } = await import('../map/services.js');
+        const { getLatestTruckReadings, getDrivers: getMapDrivers } = await import('../map/services.js');
         
-        const [readingsResponse, drivers] = await Promise.all([
-            getTruckReadings(),
+        const [latestReadings, drivers] = await Promise.all([
+            getLatestTruckReadings(),
             getMapDrivers()
         ]);
         
         // Guardar datos en cache
         driversData = drivers;
         
-        const latestReadings = getLatestReadings(readingsResponse.data);        
-        trucksData = latestReadings.map(reading => ({
+        // Procesar las últimas lecturas
+        trucksData = latestReadings.data.map(reading => ({
             id: reading.truck.id,
             licensePlate: reading.truck.licensePlate,
             brand: reading.truck.brand,
@@ -302,12 +302,12 @@ async function loadTrucksDataAsync() {
                 message: reading.truck.state.description
             },
             lastReading: {
-                temperature: reading.temp,
-                humidity: reading.percHumidity,
-                date: reading.date,
-                latitude: reading.location.latitude,
-                longitude: reading.location.longitude,
-                doorState: reading.doorState
+                temperature: reading.reading.temp,
+                humidity: reading.reading.percHumidity,
+                date: reading.reading.date,
+                latitude: reading.reading.location.latitude,
+                longitude: reading.reading.location.longitude,
+                doorState: reading.reading.doorState
             },
             driver: drivers.find(d => d.truckDefault?.id === reading.truck.id)
         }));
@@ -324,16 +324,16 @@ async function loadTrucksDataAsync() {
     }
 }
 
-function getLatestReadings(readings) {
-    const grouped = readings.reduce((acc, reading) => {
-        if (!acc[reading.truck.id] || new Date(reading.date) > new Date(acc[reading.truck.id].date)) {
-            acc[reading.truck.id] = reading;
-        }
-        return acc;
-    }, {});
+// function getLatestReadings(readings) {
+//     const grouped = readings.reduce((acc, reading) => {
+//         if (!acc[reading.truck.id] || new Date(reading.date) > new Date(acc[reading.truck.id].date)) {
+//             acc[reading.truck.id] = reading;
+//         }
+//         return acc;
+//     }, {});
     
-    return Object.values(grouped);
-}
+//     return Object.values(grouped);
+// }
 
 function renderTrucksOnMap() {
     if (!map || !trucksData.length) return;

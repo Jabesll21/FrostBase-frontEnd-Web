@@ -38,10 +38,9 @@
         },
         {
             "id": 1009,
-            "text": "Routes",
-            "icon": "route",
-            "component": "components/routes"
-
+            "text": "Settings",
+            "icon": "wrench",
+            "component": "components/settings"
         },
         {
             "id": 1010,

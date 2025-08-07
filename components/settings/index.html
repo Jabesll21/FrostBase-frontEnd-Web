@@ -1,0 +1,58 @@
+<link rel="stylesheet" href="components/settings/style.css">
+
+<div class="header">
+    <div class="h1">
+        <h1>Settings</h1>
+    </div>
+</div>
+
+<div class="Group10">
+    <div class="Top">
+        <!-- Sección TEMPERATURE -->
+        <div class="section">
+            <div class="section-title">TEMPERATURE</div>
+            <div class="fields-row">
+                <div class="field-group">
+                    <div class="field-label">Max. Temperature</div>
+                    <div class="InputField">
+                        <input id="maxTemp" type="number" min="-50" max="50" class="Option" style="width:60px;" />°C
+                    </div>
+                </div>
+                <div class="field-group">
+                    <div class="field-label">Min. Temperature</div>
+                    <div class="InputField">
+                        <input id="minTemp" type="number" min="-50" max="50" class="Option" style="width:60px;" />°C
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sección HUMIDITY -->
+        <div class="section">
+            <div class="section-title">HUMIDITY</div>
+            <div class="fields-row">
+                <div class="field-group">
+                    <div class="field-label">Max. Humidity</div>
+                    <div class="InputField">
+                        <input id="maxHum" type="number" min="0" max="100" class="Option" style="width:60px;" />%
+                    </div>
+                </div>
+                <div class="field-group">
+                    <div class="field-label">Min. Humidity</div>
+                    <div class="InputField">
+                        <input id="minHum" type="number" min="0" max="100" class="Option" style="width:60px;" />%
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="button-row">
+            <button id="saveSettings">Guardar</button>
+        </div>
+        <div id="settingsMsg"></div>
+    </div>
+</div>
+<script type="module">
+  import { init } from './code.js';
+  init();
+</script>

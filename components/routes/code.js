@@ -1,3 +1,4 @@
+import { getLatestTruckReadings } from '../map/services.js';
 import { getRoutes, getRoutesByDay, deleteRoute } from './services.js';
 
 let map;
@@ -87,6 +88,8 @@ export function init() {
     initializeMap();
     loadInitialData(); // Cambio aquí para optimizar la carga
     setTodayButton();
+    getLatestTruckReadings();
+    updateInterval = setInterval(loadTrucksDataAsync, 5000);
 
     // Limpiar el intervalo cuando se descarga la página
     window.addEventListener('unload', function() {

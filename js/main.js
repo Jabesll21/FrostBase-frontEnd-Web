@@ -13,7 +13,7 @@ function init() {
     })
     toggleSideMenu()
     showSideMenu(); //show side menu
-    loadComponent('components\\map'); //show component at start
+    loadComponent('components\\monitoring'); //show component at start
 }
 window.loadComponent = loadComponent;
 

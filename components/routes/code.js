@@ -27,22 +27,30 @@ const truckIcons = {
     'AV': L.divIcon({
         className: 'truck-marker available',
         html: '<i class="fas fa-truck"></i>',
-        iconSize: [30, 30]
+        iconSize: [30, 30],
+         iconAnchor: [15, 15], 
+        popupAnchor: [0, -15]
     }),
     'IR': L.divIcon({
         className: 'truck-marker in-route',
         html: '<i class="fas fa-truck-moving"></i>',
-        iconSize: [30, 30]
+        iconSize: [30, 30],
+        iconAnchor: [15, 15],  
+        popupAnchor: [0, -15]
     }),
     'IM': L.divIcon({
         className: 'truck-marker maintenance',
         html: '<i class="fas fa-truck-pickup"></i>',
-        iconSize: [30, 30]
+        iconSize: [30, 30],
+        iconAnchor: [15, 15], 
+        popupAnchor: [0, -15]
     }),
     'OS': L.divIcon({
         className: 'truck-marker out-of-service',
         html: '<i class="fas fa-truck-monster"></i>',
-        iconSize: [30, 30]
+        iconSize: [30, 30],
+        iconAnchor: [15, 15], 
+        popupAnchor: [0, -15]
     })
 };
 

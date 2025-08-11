@@ -208,6 +208,7 @@
     border-radius: 50%;
     border: 2px solid white;
     box-shadow: 0 2px 5px white;
+    color: white;
     transition: all 0.3s ease;
 }
 

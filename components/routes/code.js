@@ -1,4 +1,5 @@
-import { getRoutes, getTodayRoutes, getRoutesByDay, deleteRoute, getDrivers, getStores } from './services.js';
+import { getLatestTruckReadings } from '../map/services.js';
+import { getRoutes, getRoutesByDay, deleteRoute } from './services.js';
 
 let map;
 let allRoutes = [];
@@ -11,6 +12,7 @@ let trucksVisible = true;
 let routesVisible = true;
 let trucksData = []; // Cache de camiones
 let driversData = []; // Cache de conductores
+let updateInterval = null; // Intervalo para actualizar los datos de camiones
 
 const ROUTE_COLORS = [
     '#16a34a', '#dc2626', '#d97706', '#7c3aed', '#db2777',
@@ -21,6 +23,11 @@ const DAYS_MAP = {
     0: 'Sunday', 1: 'Monday', 2: 'Tuesday', 3: 'Wednesday',
     4: 'Thursday', 5: 'Friday', 6: 'Saturday'
 };
+const baseIcon = L.divIcon({
+    className: 'truck-marker base',
+    html: '<i class="fas fa-warehouse"></i>',
+    iconSize: [30, 30]
+});
 
 // Iconos para camiones según su estado
 const truckIcons = {
@@ -81,6 +88,16 @@ export function init() {
     initializeMap();
     loadInitialData(); // Cambio aquí para optimizar la carga
     setTodayButton();
+    getLatestTruckReadings();
+    updateInterval = setInterval(loadTrucksDataAsync, 5000);
+
+    // Limpiar el intervalo cuando se descarga la página
+    window.addEventListener('unload', function() {
+        if (updateInterval) {
+            clearInterval(updateInterval);
+            updateInterval = null;
+        }
+    });
 }
 
 function setTodayButton() {
@@ -276,18 +293,18 @@ async function loadTrucksDataAsync() {
         console.log('Loading truck data asynchronously...');
         
         // Importar dinámicamente las funciones del mapa
-        const { getTruckReadings, getDrivers: getMapDrivers } = await import('../map/services.js');
+        const { getLatestTruckReadings, getDrivers: getMapDrivers } = await import('../map/services.js');
         
-        const [readingsResponse, drivers] = await Promise.all([
-            getTruckReadings(),
+        const [latestReadings, drivers] = await Promise.all([
+            getLatestTruckReadings(),
             getMapDrivers()
         ]);
         
         // Guardar datos en cache
         driversData = drivers;
         
-        const latestReadings = getLatestReadings(readingsResponse.data);        
-        trucksData = latestReadings.map(reading => ({
+        // Procesar las últimas lecturas
+        trucksData = latestReadings.data.map(reading => ({
             id: reading.truck.id,
             licensePlate: reading.truck.licensePlate,
             brand: reading.truck.brand,
@@ -297,12 +314,12 @@ async function loadTrucksDataAsync() {
                 message: reading.truck.state.description
             },
             lastReading: {
-                temperature: reading.temp,
-                humidity: reading.percHumidity,
-                date: reading.date,
-                latitude: reading.location.latitude,
-                longitude: reading.location.longitude,
-                doorState: reading.doorState
+                temperature: reading.reading.temp,
+                humidity: reading.reading.percHumidity,
+                date: reading.reading.date,
+                latitude: reading.reading.location.latitude,
+                longitude: reading.reading.location.longitude,
+                doorState: reading.reading.doorState
             },
             driver: drivers.find(d => d.truckDefault?.id === reading.truck.id)
         }));
@@ -319,16 +336,16 @@ async function loadTrucksDataAsync() {
     }
 }
 
-function getLatestReadings(readings) {
-    const grouped = readings.reduce((acc, reading) => {
-        if (!acc[reading.truck.id] || new Date(reading.date) > new Date(acc[reading.truck.id].date)) {
-            acc[reading.truck.id] = reading;
-        }
-        return acc;
-    }, {});
+// function getLatestReadings(readings) {
+//     const grouped = readings.reduce((acc, reading) => {
+//         if (!acc[reading.truck.id] || new Date(reading.date) > new Date(acc[reading.truck.id].date)) {
+//             acc[reading.truck.id] = reading;
+//         }
+//         return acc;
+//     }, {});
     
-    return Object.values(grouped);
-}
+//     return Object.values(grouped);
+// }
 
 function renderTrucksOnMap() {
     if (!map || !trucksData.length) return;
@@ -534,6 +551,20 @@ function renderRoutesOnMap() {
     });
     routeLayers = {};
     
+    // Agregar el marcador con el baseIcon
+    const baseMarker = L.marker([32.45900929216648, -116.97966765227373], {
+        icon: baseIcon,
+        zIndexOffset: 1000 // Esto asegura que esté por encima de otros marcadores
+    }).addTo(map);
+    
+    // Agregar un popup al marcador base
+    baseMarker.bindPopup(`
+        <div class="base-popup">
+            <h4>Grupo Lala - Pacifico</h4>
+            <p>Centro de distribución principal</p>
+        </div>
+    `);
+
     filteredRoutes.forEach((route, index) => {
         const color = ROUTE_COLORS[index % ROUTE_COLORS.length];
         addRouteToMap(route, color);
@@ -544,7 +575,6 @@ function addRouteToMap(route, color) {
     if (!map || !route.stores || route.stores.length === 0) return;
     
     const routeGroup = L.layerGroup();
-    const routeCoordinates = [];
     
     // Add store markers
     route.stores.forEach((storeData, index) => {
@@ -578,26 +608,36 @@ function addRouteToMap(route, color) {
                 `);
                 
                 routeGroup.addLayer(marker);
-                routeCoordinates.push([lat, lng]);
-                
             } catch (error) {
                 console.error('Error creating marker for store:', store.name, error);
             }
         }
     });
     
-    if (routeCoordinates.length > 1) {
+    // Add route line using waypoints
+    if (route.waypoints && route.waypoints.length > 1) {
         try {
-            const routeLine = L.polyline(routeCoordinates, {
-                color: color,
-                weight: 3,
-                opacity: 0.7,
-                dashArray: '10, 5'
-            });
+            const waypointCoordinates = route.waypoints.map(point => [
+                parseFloat(point.latitude),
+                parseFloat(point.longitude)
+            ]).filter(coord => 
+                !isNaN(coord[0]) && !isNaN(coord[1]) &&
+                coord[0] >= -90 && coord[0] <= 90 &&
+                coord[1] >= -180 && coord[1] <= 180
+            );
             
-            routeGroup.addLayer(routeLine);
+            if (waypointCoordinates.length > 1) {
+                const routeLine = L.polyline(waypointCoordinates, {
+                    color: color,
+                    weight: 3,
+                    opacity: 0.7,
+                    dashArray: '10, 5'
+                });
+                
+                routeGroup.addLayer(routeLine);
+            }
         } catch (error) {
-            console.error('Error creating route line:', error);
+            console.error('Error creating route line from waypoints:', error);
         }
     }
     
@@ -960,13 +1000,17 @@ function toggleTrucks() {
     
     if (trucksVisible) {
         map.addLayer(truckMarkers);
-        if (trucksData.length === 0) {
-            loadTrucksDataAsync();
-        } else {
-            renderTrucksOnMap();
-        }
+        // Cargar datos inmediatamente
+        loadTrucksDataAsync();
+        // Iniciar el intervalo de actualización
+        updateInterval = setInterval(loadTrucksDataAsync, 5000);
     } else {
         map.removeLayer(truckMarkers);
+        // Detener el intervalo cuando se ocultan los camiones
+        if (updateInterval) {
+            clearInterval(updateInterval);
+            updateInterval = null;
+        }
     }
     
     const btn = document.getElementById('show-trucks');

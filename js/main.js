@@ -13,7 +13,7 @@ function init() {
     })
     toggleSideMenu()
     showSideMenu(); //show side menu
-    loadComponent('components\\map'); //show component at start
+    loadComponent('components\\monitoring'); //show component at start
 }
 window.loadComponent = loadComponent;
 
@@ -24,12 +24,12 @@ export function toggleSideMenu(){
     sideMenuVisible = !sideMenuVisible;
     //is sideMenuVisible
     if (sideMenuVisible) {
-        document.getElementById('side-menu').style.display = 'block';
-        document.getElementById('content').style.width = 'calc(100% - 150px)'
+        document.getElementById('side-menu').classList.add('visible');
+        document.body.classList.add('menu-visible');
     }
     else{
-        document.getElementById('side-menu').style.display = 'none';
-        document.getElementById('content').style.width = '100%'
+        document.getElementById('side-menu').classList.remove('visible');
+        document.body.classList.remove('menu-visible');
     }
 }
    
